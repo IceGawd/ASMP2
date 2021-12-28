@@ -4,4 +4,10 @@ version: 1.0
 author: CelluronTech
 
 commands:
+  invite:
+  create:
+  remove:
+  kick:
+  list:
+  types:
   media:
