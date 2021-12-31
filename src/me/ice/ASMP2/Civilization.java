@@ -6,7 +6,8 @@ public class Civilization {
 	int level = 1;
 	
 	Civilization(CivilizationType t, String n) {
-		
+		type = t;
+		name = n;
 	}
 
 	@Override

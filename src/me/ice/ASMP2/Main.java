@@ -56,6 +56,7 @@ public class Main extends JavaPlugin {
 		return serverInfo.civilizations.get(serverInfo.indexOfCivilization.get(index));
 	}
 	
+	@SuppressWarnings("unlikely-arg-type")
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		Player p = (Player) sender;
 		if (label.equalsIgnoreCase("y")) {
@@ -100,6 +101,32 @@ public class Main extends JavaPlugin {
 			}
 			else {
 				sender.sendMessage(ChatColor.RED + "Please run the command again but with a player name");
+			}
+		}
+		
+		if (label.equalsIgnoreCase("create")) {
+			if (args.length == 2) {
+				CivilizationType t = null;
+				for (CivilizationType c : types) {
+					if (c.equals(args[0])) {
+						t = c;
+					}
+				}
+				if (t == null) {
+					p.sendMessage(ChatColor.RED + args[0] + " is not a civilization type!");					
+				}
+				else {
+					serverInfo.civilizations.add(new Civilization(t, args[1]));
+					int index = getPlayerIndex(p);
+					if (index == -1) {
+						p.sendMessage("You have been invited to " + civ.toString() + " by " + p.getName());
+						p.sendMessage("Reply with /y (yes) or /n (no) within 60 seconds");						
+					}
+				}
+			}
+			else {
+				p.sendMessage(ChatColor.RED + "Format your response with the type of civilization and name");
+				p.sendMessage("Example: \"/create TECH yowhatup\" or \"create Technological yowhatup\"");
 			}
 		}
 		
