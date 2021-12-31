@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public class InfoToSave {
-	// CONNECTED
+	// CONNECTED 
 	ArrayList<UUID> playersWhoHaveJoined;
 	ArrayList<Integer> indexOfCivilization;
 

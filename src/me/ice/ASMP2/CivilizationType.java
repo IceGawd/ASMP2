@@ -1,16 +1,12 @@
 package me.ice.ASMP2;
 
-import org.bukkit.ChatColor;
-
 public class CivilizationType {
 	String name;
 	String nickname;
-	ChatColor color;
 	
-	CivilizationType(String a, String i, ChatColor c) {
+	CivilizationType(String a, String i) {
 		name = a;
 		nickname = i;
-		color = c;
 	}
 	
 	String getName() {
