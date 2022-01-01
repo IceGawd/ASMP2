@@ -203,6 +203,19 @@ public class Main extends JavaPlugin {
 			}
 		}
 		
+		if (label.equalsIgnoreCase("list")) {
+			for (Civilization c : serverInfo.civilizations) {
+				p.sendMessage(c.toString());
+			}
+		}
+
+		
+		if (label.equalsIgnoreCase("types")) {
+			for (CivilizationType ct : types) {
+				p.sendMessage(ct.getName());
+			}
+		}
+		
 		if (label.equalsIgnoreCase("info")) {
 			if (args.length == 0) {
 				int index = getPlayerIndex(p);

@@ -10,4 +10,9 @@ commands:
   kick:
   list:
   types:
+  info:
+  rename:
+  changecolor:
+  leave:
+  transfer:
   media:
