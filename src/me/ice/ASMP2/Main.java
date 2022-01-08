@@ -1,5 +1,9 @@
 package me.ice.ASMP2;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -13,39 +17,83 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 public class Main extends JavaPlugin {
 	InfoToSave serverInfo;
-	ArrayList<Event> events;
+	ArrayList<Event> events = new ArrayList<Event>();
+	// ICE stands for Internal Civilization Extention
+	static final String path = "./civilizations.ice";
+	static final String[] programmers = {
+		"IceGod9001", 	
+	};
 	static final CivilizationType[] types = new CivilizationType[] {
 		new CivilizationType("Produce", "PROD"), 
 		new CivilizationType("Construct", "CONS"), 
-		new CivilizationType("Technlogical", "TECH"), 
+		new CivilizationType("Technological", "TECH"), 
+		new CivilizationType("Friendly", "LOVE"), 
+
+// 		LATER DEFAULT
+//		new CivilizationType("Atlantic", "ATLA"), 
+//		new CivilizationType("Taskmaster", "TASK"), 
+//		new CivilizationType("Dwarven", "DWAR"), 
+//		new CivilizationType("Traveler", "TRAV"), 
+
+//		DLC
 //		new CivilizationType("Necromancer", "NCRO"), 
 //		new CivilizationType("Ranger", "RANG"), 
-//		new CivilizationType("Nuker / Demolition", "NUKE / DEMO"), 
+//		new CivilizationType("Transportation", "UBER"), 
 	};
 	
 	@Override
 	public void onEnable() {
-		serverInfo = new InfoToSave();
+		try {
+			FileInputStream fileIn = new FileInputStream(path);
+			ObjectInputStream in = new ObjectInputStream(fileIn);
+			serverInfo = (InfoToSave) in.readObject();
+			in.close();
+			fileIn.close();
+		}
+		catch (Exception e) {
+			serverInfo = new InfoToSave();
+			Bukkit.broadcastMessage("This might not be an actual error lol");
+			e.printStackTrace();
+		}
+		
+		for (int x = 0; x < serverInfo.playersWhoHaveJoined.size(); x++) {
+			System.out.println("UUIDs: " + serverInfo.playersWhoHaveJoined.get(x));
+		}
+		
+		System.out.println(serverInfo.playersWhoHaveJoined.size());
+		System.out.println(serverInfo.indexOfCivilization.size());
+		System.out.println(serverInfo.civilizations.size());
+		
 		BukkitScheduler scheduler = getServer().getScheduler();
 		scheduler.scheduleSyncRepeatingTask(this, new Runnable() {
 			@Override
 			public void run() {
 				checkForPeople();
 			}
-		}, 0, 20 * 60);	
-
+		}, 0, 20 * 60);
+		
 	}
 	
 	@Override
 	public void onDisable() {
-		
+		FileOutputStream fileOut;
+		try {
+			fileOut = new FileOutputStream(path);
+			ObjectOutputStream out = new ObjectOutputStream(fileOut);
+			out.writeObject(serverInfo);
+			out.close();
+			fileOut.close();
+		} catch (Exception e) {
+			Bukkit.broadcastMessage("This is prolly a bad message");
+			e.printStackTrace();
+		}
 	}
 	
 	int getPlayerIndex(Player p) {
 		UUID searchFor = p.getUniqueId();
 		
 		for (int x = 0; x < serverInfo.playersWhoHaveJoined.size(); x++) {
-			if (serverInfo.playersWhoHaveJoined.get(x) == searchFor) {
+			if (serverInfo.playersWhoHaveJoined.get(x).equals(searchFor)) {
 				return x;
 			}
 		}
@@ -63,7 +111,7 @@ public class Main extends JavaPlugin {
 	
 	Civilization civilizationFromName(String name) {
 		for (Civilization c : serverInfo.civilizations) {
-			if (c.toString().equals(name)) {
+			if (c.name.toLowerCase().equals(name.toLowerCase())) {
 				return c;
 			}
 		}
@@ -80,6 +128,7 @@ public class Main extends JavaPlugin {
 		 if (index == -1) {
 			serverInfo.playersWhoHaveJoined.add(p.getUniqueId());
 			serverInfo.indexOfCivilization.add(civIndex);
+			index = serverInfo.indexOfCivilization.size() - 1;
 		 }
 		 else {
 			 p.sendMessage(ChatColor.RED + "You have left the " + civilizationFromIndex(index) + " civilization!");
@@ -94,7 +143,7 @@ public class Main extends JavaPlugin {
 		Player p = (Player) sender;
 		if (label.equalsIgnoreCase("y")) {
 			 for (Event e : events) {
-				 if (e.effected == p && e.milliLength + e.timeStarted < System.currentTimeMillis()) {
+				 if (e.effected == p && e.milliLength + e.timeStarted > System.currentTimeMillis()) {
 					 joinCivilization(p, e.civIndex);
 				 }
 			 }
@@ -130,6 +179,8 @@ public class Main extends JavaPlugin {
 		
 		if (label.equalsIgnoreCase("create")) {
 			if (args.length == 2) {
+//				p.sendMessage(args[0]);
+//				p.sendMessage(args[1]);
 				CivilizationType t = null;
 				for (CivilizationType c : types) {
 					if (c.equals(args[0])) {
@@ -137,11 +188,17 @@ public class Main extends JavaPlugin {
 					}
 				}
 				if (t == null) {
-					p.sendMessage(ChatColor.RED + args[0] + " is not a civilization type!");					
+					p.sendMessage(ChatColor.RED + args[0] + " is not a civilization type!");
 				}
 				else {
-					serverInfo.civilizations.add(new Civilization(t, args[1], p.getUniqueId()));
-					joinCivilization(p, serverInfo.civilizations.size() - 1);
+					int index = getPlayerIndex(p);
+					if (index == -1 || !civilizationFromIndex(index).leader.equals(p.getUniqueId())) {
+						serverInfo.civilizations.add(new Civilization(t, args[1], p.getUniqueId()));
+						joinCivilization(p, serverInfo.civilizations.size() - 1);
+					}
+					else {
+						p.sendMessage(ChatColor.RED + "You cannot create a new civilization because you are the leader of the " + civilizationFromIndex(index) + " civilization!");
+					}
 				}
 			}
 			else {
@@ -149,7 +206,6 @@ public class Main extends JavaPlugin {
 				p.sendMessage("Example: \"/create TECH yowhatup\" or \"create Technological yowhatup\"");
 			}
 		}
-		
 		if (label.equalsIgnoreCase("disband")) {
 			int index = getPlayerIndex(p);
 			if (index == -1) {
@@ -158,7 +214,7 @@ public class Main extends JavaPlugin {
 			else {
 				int i2 = serverInfo.indexOfCivilization.get(index);
 				Civilization c = serverInfo.civilizations.get(i2);
-				if (c.leader == p.getUniqueId()) {
+				if (c.leader.equals(p.getUniqueId())) {
 					for (int x = 0; x < serverInfo.playersWhoHaveJoined.size(); x++) {
 						if (serverInfo.indexOfCivilization.get(x) == i2) {
 							serverInfo.playersWhoHaveJoined.remove(x);
@@ -181,7 +237,7 @@ public class Main extends JavaPlugin {
 				}
 				else {
 					Civilization c = civilizationFromIndex(yourIndex);
-					if (c.leader == p.getUniqueId()) {
+					if (c.leader.equals(p.getUniqueId())) {
 						Player gonnaGetKicked = playerFromName(args[0]);
 						int index = getPlayerIndex(gonnaGetKicked);
 						if (index == -1 || civilizationFromIndex(index) != c) {
@@ -248,7 +304,7 @@ public class Main extends JavaPlugin {
 				}
 				else {
 					Civilization c = civilizationFromIndex(index);
-					if (c.leader == p.getUniqueId()) {
+					if (c.leader.equals(p.getUniqueId())) {
 						p.sendMessage(ChatColor.GREEN + "Name changed from " + c.name + " to " + args[0]);
 						c.name = args[0];
 					}
@@ -270,10 +326,10 @@ public class Main extends JavaPlugin {
 				}
 				else {
 					Civilization c = civilizationFromIndex(index);
-					if (c.leader == p.getUniqueId()) {
+					if (c.leader.equals(p.getUniqueId())) {
 						for (ChatColor color : ChatColor.values()) {
 							if (args[0].toLowerCase().equals(color.name().toLowerCase())) {
-								p.sendMessage(ChatColor.GREEN + "Color changed from " + c.cc + c.cc.toString() + ChatColor.GREEN + " to " + color + color.toString());
+								p.sendMessage(ChatColor.GREEN + "Color changed from " + c.cc + c.cc.name() + ChatColor.GREEN + " to " + color + color.name());
 								c.cc = color;
 							}
 						}
@@ -288,6 +344,12 @@ public class Main extends JavaPlugin {
 			}
 		}
 
+		if (label.equalsIgnoreCase("colors")) {
+			for (ChatColor cc : ChatColor.values()) {
+				p.sendMessage(cc + cc.name());
+			}
+		}
+		
 		if (label.equalsIgnoreCase("leave")) {
 			int index = getPlayerIndex(p);	
 			if (index == -1) {
@@ -308,7 +370,7 @@ public class Main extends JavaPlugin {
 				}
 				else {
 					Civilization c = civilizationFromIndex(index);
-					if (c.leader == p.getUniqueId()) {
+					if (c.leader.equals(p.getUniqueId())) {
 						Player newLeader = playerFromName(args[0]);
 						if (newLeader == null) {
 							p.sendMessage(ChatColor.RED + "Player is not online right now");
@@ -325,6 +387,27 @@ public class Main extends JavaPlugin {
 			}
 			else {
 				p.sendMessage(ChatColor.RED + "Give the name of the player you are making leader!");				
+			}
+		}
+		if (label.equalsIgnoreCase("tester")) {
+			boolean work = false;
+			for (String s : programmers) {
+				if (s.equals(p.getName())) {
+					work = true;
+				}
+			}
+			if (work) {
+				p.sendMessage("UUIDs: ");
+				for (UUID id : serverInfo.playersWhoHaveJoined) {
+					p.sendMessage(Bukkit.getPlayer(id).getName() + ": " + id);
+				}
+				p.sendMessage("Indexes: ");
+				for (int i : serverInfo.indexOfCivilization) {
+					p.sendMessage(Integer.toString(i));
+				}
+			}
+			else {
+				p.sendMessage(ChatColor.RED + "Programmers only ;p");
 			}
 		}
 		
@@ -394,6 +477,7 @@ public class Main extends JavaPlugin {
 		for (Event e : events) {
 			if (effected == e.effected) {
 				events.remove(e);
+				return;
 			}
 		}		
 	}

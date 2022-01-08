@@ -1,10 +1,12 @@
 package me.ice.ASMP2;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
 
-public class Civilization {
+@SuppressWarnings("serial")
+public class Civilization implements Serializable{
 	CivilizationType type;
 	String name;
 	UUID leader;
@@ -19,6 +21,6 @@ public class Civilization {
 
 	@Override
 	public String toString() {
-		return "[" + type.nickname + "]" + " " + name;
+		return cc + "[" + type.nickname + "]" + " " + name;
 	}
 }

@@ -1,6 +1,9 @@
 package me.ice.ASMP2;
 
-public class CivilizationType {
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public class CivilizationType implements Serializable{
 	String name;
 	String nickname;
 	
