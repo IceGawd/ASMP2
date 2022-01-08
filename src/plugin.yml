@@ -19,5 +19,6 @@ commands:
   colors:
   disband:
   tester:
+  clear:
   y:
   n:

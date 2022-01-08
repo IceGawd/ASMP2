@@ -23,6 +23,7 @@ public class Main extends JavaPlugin {
 	static final String[] programmers = {
 		"IceGod9001", 	
 	};
+	static final String owner = "827690fe-69f4-49bf-9540-f9a29088b9b8";
 	static final CivilizationType[] types = new CivilizationType[] {
 		new CivilizationType("Produce", "PROD"), 
 		new CivilizationType("Construct", "CONS"), 
@@ -99,16 +100,7 @@ public class Main extends JavaPlugin {
 		}
 		return -1;
 	}
-	
-	Player playerFromName(String name) {
-		for (Player p : Bukkit.getOnlinePlayers()) {
-			if (p.getName().equals(name)) {
-				return p;
-			}
-		}	
-		return null;
-	}
-	
+		
 	Civilization civilizationFromName(String name) {
 		for (Civilization c : serverInfo.civilizations) {
 			if (c.name.toLowerCase().equals(name.toLowerCase())) {
@@ -154,7 +146,7 @@ public class Main extends JavaPlugin {
 
 		if (label.equalsIgnoreCase("invite")) {
 			if (args.length == 1) {
-				Player on = playerFromName(args[0]);
+				Player on = Bukkit.getPlayer(args[0]);
 				if (on == null) {
 					sender.sendMessage(ChatColor.RED + "Player name is either misspelled or player is not online");
 				}
@@ -238,7 +230,7 @@ public class Main extends JavaPlugin {
 				else {
 					Civilization c = civilizationFromIndex(yourIndex);
 					if (c.leader.equals(p.getUniqueId())) {
-						Player gonnaGetKicked = playerFromName(args[0]);
+						Player gonnaGetKicked = Bukkit.getPlayer(args[0]);
 						int index = getPlayerIndex(gonnaGetKicked);
 						if (index == -1 || civilizationFromIndex(index) != c) {
 							p.sendMessage(ChatColor.RED + gonnaGetKicked.getName() + " is not in your civilization!");						
@@ -371,7 +363,7 @@ public class Main extends JavaPlugin {
 				else {
 					Civilization c = civilizationFromIndex(index);
 					if (c.leader.equals(p.getUniqueId())) {
-						Player newLeader = playerFromName(args[0]);
+						Player newLeader = Bukkit.getPlayer(args[0]);
 						if (newLeader == null) {
 							p.sendMessage(ChatColor.RED + "Player is not online right now");
 						}
@@ -399,15 +391,47 @@ public class Main extends JavaPlugin {
 			if (work) {
 				p.sendMessage("UUIDs: ");
 				for (UUID id : serverInfo.playersWhoHaveJoined) {
-					p.sendMessage(Bukkit.getPlayer(id).getName() + ": " + id);
+					p.sendMessage(Bukkit.getOfflinePlayer(id).getName() + ": " + id);
 				}
 				p.sendMessage("Indexes: ");
 				for (int i : serverInfo.indexOfCivilization) {
 					p.sendMessage(Integer.toString(i));
 				}
+				for (Civilization c : serverInfo.civilizations) {
+					printCivilization(p, c);
+				}
 			}
 			else {
 				p.sendMessage(ChatColor.RED + "Programmers only ;p");
+			}
+		}
+		
+		if (label.equalsIgnoreCase("clear")) {
+			// TODO: Remove this temp ass Icegod shit
+			if (p.getUniqueId().equals(UUID.fromString(owner)) || p.getName().equals("IceGod9001")) {
+				if (args.length == 1) {
+					Player clearer = Bukkit.getPlayer(args[0]);
+					if (clearer == null) {
+						p.sendMessage("Homie, " + args[0] + " is not online or smth idk");
+					}
+					else {
+						int index = getPlayerIndex(clearer);
+						if (index == -1) {
+							p.sendMessage("Homie, I can't clear em, they aint in a civ");
+						}
+						else {
+							serverInfo.indexOfCivilization.remove(index);
+							serverInfo.playersWhoHaveJoined.remove(index);
+							p.sendMessage("Cleared homie!");
+						}
+					}
+				}
+				else {
+					p.sendMessage("Homie, you gotta gimme the name of the person");
+				}
+			}
+			else {
+				p.sendMessage(ChatColor.RED + "Crookit only!");
 			}
 		}
 		
@@ -423,7 +447,7 @@ public class Main extends JavaPlugin {
 		p.sendMessage("Name: " + c.name);
 		p.sendMessage("Type: " + c.type.name);
 		p.sendMessage("Level: " + Integer.toString(c.level));
-		p.sendMessage("Leader: " + Bukkit.getPlayer(c.leader).getName());
+		p.sendMessage("Leader: " + Bukkit.getOfflinePlayer(c.leader).getName());
 		int count = 0;
 		int indexOfCivilization = indexFromCivilization(c);
 		
@@ -457,6 +481,13 @@ public class Main extends JavaPlugin {
 		}
 		// Dead civilization lmao
 		serverInfo.civilizations.remove(civIndex);
+		// Fix other civIndexes
+		for (int x = 0; x < serverInfo.indexOfCivilization.size(); x++) {
+			int num = serverInfo.indexOfCivilization.get(x);
+			if (num > civIndex) {
+				serverInfo.indexOfCivilization.set(x, num - 1);
+			}
+		}
 	}
 
 	public void addEvent(Event event) {
