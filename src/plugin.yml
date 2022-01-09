@@ -31,4 +31,4 @@ commands:
  permissions:
   level.up:
     description: allows levelup command
-      default: op
+    default: op
