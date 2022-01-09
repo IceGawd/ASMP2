@@ -70,6 +70,9 @@ public class Main extends JavaPlugin {
 			@Override
 			public void run() {
 				checkForPeople();
+				for (int x = 0; x < serverInfo.civilizations.size(); x++) {
+					civilizationCheck(x);
+				}
 			}
 		}, 0, 20 * 60);
 		
@@ -133,18 +136,18 @@ public class Main extends JavaPlugin {
 	@SuppressWarnings("unlikely-arg-type")
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		Player p = (Player) sender;
-		if (label.equalsIgnoreCase("y")) {
+		if (label.equalsIgnoreCase("civaccept")) {
 			 for (Event e : events) {
 				 if (e.effected == p && e.milliLength + e.timeStarted > System.currentTimeMillis()) {
 					 joinCivilization(p, e.civIndex);
 				 }
 			 }
 		}
-		if (label.equalsIgnoreCase("n")) {
+		if (label.equalsIgnoreCase("civdeny")) {
 			removePerson(p);
 		}
 
-		if (label.equalsIgnoreCase("invite")) {
+		if (label.equalsIgnoreCase("civinvite")) {
 			if (args.length == 1) {
 				Player on = Bukkit.getPlayer(args[0]);
 				if (on == null) {
@@ -156,11 +159,12 @@ public class Main extends JavaPlugin {
 						sender.sendMessage(ChatColor.RED + "You are not in a civilization!");					
 					}
 					else {
-						Civilization civ = civilizationFromIndex(index);
+						int civindex = serverInfo.indexOfCivilization.get(index);
+						Civilization civ = serverInfo.civilizations.get(civindex);
 						sender.sendMessage(ChatColor.GREEN + "Invite sent!");
 						on.sendMessage("You have been invited to " + civ.toString() + " by " + p.getName());
-						on.sendMessage("Reply with /y (yes) or /n (no) within 60 seconds");
-						addEvent(new Event(on, index, 60000));
+						on.sendMessage("Reply with /civaccept (yes) or /civdeny (no) within 60 seconds");
+						addEvent(new Event(on, civindex, 60000));
 					}					
 				}
 			}
@@ -169,7 +173,7 @@ public class Main extends JavaPlugin {
 			}
 		}
 		
-		if (label.equalsIgnoreCase("create")) {
+		if (label.equalsIgnoreCase("civcreate")) {
 			if (args.length == 2) {
 //				p.sendMessage(args[0]);
 //				p.sendMessage(args[1]);
@@ -198,7 +202,7 @@ public class Main extends JavaPlugin {
 				p.sendMessage("Example: \"/create TECH yowhatup\" or \"create Technological yowhatup\"");
 			}
 		}
-		if (label.equalsIgnoreCase("disband")) {
+		if (label.equalsIgnoreCase("civdisband")) {
 			int index = getPlayerIndex(p);
 			if (index == -1) {
 				p.sendMessage(ChatColor.RED + "You can't disband a civilization if you are not in a civilization!");				
@@ -214,6 +218,7 @@ public class Main extends JavaPlugin {
 							x--;
 						}
 					}
+					civilizationCheck(i2);
 				}
 				else {
 					p.sendMessage(ChatColor.RED + "You can't disband a civilization if you are not the leader!");
@@ -221,7 +226,7 @@ public class Main extends JavaPlugin {
 			}
 		}
 
-		if (label.equalsIgnoreCase("kick")) {
+		if (label.equalsIgnoreCase("civkick")) {
 			if (args.length == 1) {
 				int yourIndex = getPlayerIndex(p);
 				if (yourIndex == -1) {
@@ -251,20 +256,20 @@ public class Main extends JavaPlugin {
 			}
 		}
 		
-		if (label.equalsIgnoreCase("list")) {
+		if (label.equalsIgnoreCase("civlist")) {
 			for (Civilization c : serverInfo.civilizations) {
 				p.sendMessage(c.toString());
 			}
 		}
 
 		
-		if (label.equalsIgnoreCase("types")) {
+		if (label.equalsIgnoreCase("civtypes")) {
 			for (CivilizationType ct : types) {
 				p.sendMessage(ct.getName());
 			}
 		}
 		
-		if (label.equalsIgnoreCase("info")) {
+		if (label.equalsIgnoreCase("civinfo")) {
 			if (args.length == 0) {
 				int index = getPlayerIndex(p);
 				if (index == -1) {
@@ -288,7 +293,7 @@ public class Main extends JavaPlugin {
 			}
 		}
 		
-		if (label.equalsIgnoreCase("rename")) {
+		if (label.equalsIgnoreCase("civrename")) {
 			if (args.length == 1) {
 				int index = getPlayerIndex(p);
 				if (index == -1) {
@@ -310,7 +315,7 @@ public class Main extends JavaPlugin {
 			}
 		}
 
-		if (label.equalsIgnoreCase("changecolor")) {
+		if (label.equalsIgnoreCase("civchangecolor")) {
 			if (args.length == 1) {
 				int index = getPlayerIndex(p);	
 				if (index == -1) {
@@ -336,13 +341,13 @@ public class Main extends JavaPlugin {
 			}
 		}
 
-		if (label.equalsIgnoreCase("colors")) {
+		if (label.equalsIgnoreCase("civcolors")) {
 			for (ChatColor cc : ChatColor.values()) {
 				p.sendMessage(cc + cc.name());
 			}
 		}
 		
-		if (label.equalsIgnoreCase("leave")) {
+		if (label.equalsIgnoreCase("civleave")) {
 			int index = getPlayerIndex(p);	
 			if (index == -1) {
 				p.sendMessage(ChatColor.RED + "Can't leave a civilization that you aren't in!");
@@ -354,7 +359,7 @@ public class Main extends JavaPlugin {
 			}
 		}
 
-		if (label.equalsIgnoreCase("transfer")) {
+		if (label.equalsIgnoreCase("civtransfer")) {
 			if (args.length == 1) {
 				int index = getPlayerIndex(p);	
 				if (index == -1) {
@@ -381,7 +386,7 @@ public class Main extends JavaPlugin {
 				p.sendMessage(ChatColor.RED + "Give the name of the player you are making leader!");				
 			}
 		}
-		if (label.equalsIgnoreCase("tester")) {
+		if (label.equalsIgnoreCase("civtester")) {
 			boolean work = false;
 			for (String s : programmers) {
 				if (s.equals(p.getName())) {
@@ -406,7 +411,7 @@ public class Main extends JavaPlugin {
 			}
 		}
 		
-		if (label.equalsIgnoreCase("clear")) {
+		if (label.equalsIgnoreCase("civclear")) {
 			// TODO: Remove this temp ass Icegod shit
 			if (p.getUniqueId().equals(UUID.fromString(owner)) || p.getName().equals("IceGod9001")) {
 				if (args.length == 1) {
@@ -435,7 +440,7 @@ public class Main extends JavaPlugin {
 			}
 		}
 		
-		if (label.equalsIgnoreCase("media")) {
+		if (label.equalsIgnoreCase("civmedia")) {
 			sender.sendMessage("OFFICIAL ASMP STREAM CHANNEL: https://www.twitch.tv/bubb1ebees");
 			sender.sendMessage("SUPPORT THE OWNER: https://www.youtube.com/channel/UCfLi7Y8WOtu3zclT10NNXfw");
 			return true;
