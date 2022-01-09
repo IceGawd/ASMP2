@@ -4,4 +4,21 @@ version: 1.0
 author: CelluronTech
 
 commands:
-  media:
+  civinvite:
+  civcreate:
+  civremove:
+  civkick:
+  civlist:
+  civtypes:
+  civinfo:
+  civrename:
+  civchangecolor:
+  civleave:
+  civtransfer:
+  civmedia:
+  civcolors:
+  civdisband:
+  civtester:
+  civclear:
+  civaccept:
+  civdeny:
