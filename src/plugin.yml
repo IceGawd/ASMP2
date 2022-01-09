@@ -27,8 +27,7 @@ commands:
   civAbil1:
   civLevelUp:
     permission: level.up
- 
- permissions:
+permissions:
   level.up:
     description: allows levelup command
     default: op
