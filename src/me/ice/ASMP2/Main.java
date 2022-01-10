@@ -32,12 +32,16 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitScheduler;
 
 public class Main extends JavaPlugin {
@@ -510,19 +514,24 @@ public class Main extends JavaPlugin {
 				Civilization c = serverInfo.civilizations.get(i2);
 				int civindex = serverInfo.indexOfCivilization.get(index);
 				Civilization civ = serverInfo.civilizations.get(civindex);
+				Player player = (Player) sender;
 				if (civ.toString () == "Produce") {
 					if (civ.level >= 2 ) {
 						sender.sendMessage("insert power here");
+						player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 200, 1));
+						player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 200, 1));
 					}
 				if (civ.toString() == "Technology") {	
 					if (civ.level >= 2 ) {
 						sender.sendMessage("insert power here");
+						
+						 ItemStack BOAT = new ItemStack(Material.BIRCH_BOAT, 50);
+						player.getInventory().addItem(BOAT);
 					}
 				}
 				if (civ.toString() == "Construction") {	
 					if (civ.level >= 2 ) {
 						sender.sendMessage("insert power here");
-						Player player = (Player) sender;
 						Location loc = player.getLocation();
 
 						World w = Bukkit.getWorld("world"); //if the event has a player object use that to get the world
