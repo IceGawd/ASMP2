@@ -31,8 +31,11 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -52,6 +55,7 @@ public class Main extends JavaPlugin {
 		new CivilizationType("Technological", "TECH"), 
 		new CivilizationType("Friendly", "LOVE"), 
 		new CivilizationType("Barbarian", "DEATH"),
+		new CivilizationType("WHALE", "WHALE"),
 // 		LATER DEFAULT
 //		new CivilizationType("Atlantic", "ATLA"), 
 //		new CivilizationType("Taskmaster", "TASK"), 
@@ -63,7 +67,7 @@ public class Main extends JavaPlugin {
 //		new CivilizationType("Ranger", "RANG"), 
 //		new CivilizationType("Transportation", "UBER"), 
 	};
-	
+
 
 
 	@Override
@@ -196,7 +200,9 @@ public class Main extends JavaPlugin {
 				sender.sendMessage(ChatColor.RED + "Please run the command again but with a player name");
 			}
 		}
-		
+		if (label.equalsIgnoreCase("civcreate WHALE")) {
+			sender.sendMessage("WHALE DOES NOT EXIST");
+		}
 		if (label.equalsIgnoreCase("civcreate")) {
 			if (args.length == 2) {
 //				p.sendMessage(args[0]);
@@ -210,6 +216,9 @@ public class Main extends JavaPlugin {
 				if (t == null) {
 					p.sendMessage(ChatColor.RED + args[0] + " is not a civilization type!");
 				}
+			
+					
+				
 				else {
 					int index = getPlayerIndex(p);
 					if (index == -1 || !civilizationFromIndex(index).leader.equals(p.getUniqueId())) {
@@ -513,6 +522,11 @@ public class Main extends JavaPlugin {
 				if (civ.toString() == "Construction") {	
 					if (civ.level >= 2 ) {
 						sender.sendMessage("insert power here");
+						Player player = (Player) sender;
+						Location loc = player.getLocation();
+
+						World w = Bukkit.getWorld("world"); //if the event has a player object use that to get the world
+					    w.spawnEntity(loc, EntityType.LIGHTNING);
 					}
 				}
 
