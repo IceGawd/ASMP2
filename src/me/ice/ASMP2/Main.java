@@ -50,7 +50,7 @@ public class Main extends JavaPlugin {
 	// ICE stands for Internal Civilization Extention
 	static final String path = "./civilizations.ice";
 	static final String[] programmers = {
-		"IceGod9001", 	
+		"IceGod9001", "JexPurx" 	
 	};
 	static final String owner = "827690fe-69f4-49bf-9540-f9a29088b9b8";
 	static final CivilizationType[] types = new CivilizationType[] {
