@@ -1,25 +1,3 @@
-/*package me.ice.ASMP2;
-
-import org.bukkit.plugin.java.JavaPlugin;
-
-public class Main extends JavaPlugin {
-	@Override 
-	public void onEnable() {	
-		this.getCommand("Media").setExecutor(new Media());
-
-		
-	}
-
-	public void onDisable() {
-		
-	}
-		}
-		
-
-
-
-
-*/
 package me.ice.ASMP2;
 
 import java.io.FileInputStream;
@@ -510,8 +488,6 @@ public class Main extends JavaPlugin {
 				sender.sendMessage("Look at this loser who isn't in a civilization");
 			}
 			else if (index == 1) {
-				int i2 = serverInfo.indexOfCivilization.get(index);
-				Civilization c = serverInfo.civilizations.get(i2);
 				int civindex = serverInfo.indexOfCivilization.get(index);
 				Civilization civ = serverInfo.civilizations.get(civindex);
 				Player player = (Player) sender;
