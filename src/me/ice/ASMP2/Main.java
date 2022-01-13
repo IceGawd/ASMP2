@@ -559,9 +559,35 @@ public class Main extends JavaPlugin {
 		p.sendMessage("""
 --------- Help: ASMP2 ---------------------------
 Below is a list of all ASMP2 commands:
-/civ:
-/media:
-				""");		
+/civ invite 
+Invite someone to your team!
+/civ create 
+Create your own team with this format: /civ [CIV TYPE] [CIV NAME]
+/civ disband
+Wipe your team off the SMP
+/civ kick
+Kick someone out of your team
+/civ list
+List all of the current existing teams
+/civ types
+List of all the types of civilizations on the SMP
+/civ info
+Info of your civilization
+/civ rename
+Rename your civilization
+/civ changecolor
+Change the color of your civilization
+/civ leave
+Leave your civilization : (
+/civ transfer
+Transfer team leadership to someone else
+/civ colors
+List of all the colors available for you team to change into
+/civ accept
+Accept a team invite 
+/civ deny
+Deny a team invite 
+""");		
 	}
 
 	private void printCivilization(Player p, Civilization c) {
