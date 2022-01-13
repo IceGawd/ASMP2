@@ -218,7 +218,9 @@ public class Main extends JavaPlugin {
 				}
 				else {
 					int index = getPlayerIndex(p);
-					if (index == -1 || !civilizationFromIndex(index).leader.equals(p.getUniqueId())) {
+					if (isCivilizationName(args[1])) {
+						p.sendMessage(ChatColor.RED + "A civilization with that name already exists.");
+					} else if (index == -1 || !civilizationFromIndex(index).leader.equals(p.getUniqueId())) {
 						serverInfo.civilizations.add(new Civilization(t, args[1], p.getUniqueId()));
 						joinCivilization(p, serverInfo.civilizations.size() - 1);
 					}
@@ -625,6 +627,15 @@ Deny a team invite
 			}
 		}
 		return -1;
+	}
+
+	/**
+	 * Check if a civilization with {@code name} already exists.
+	 * @param name
+	 * @return {@code true} if there's a match. {@code false} otherwise
+	 */
+	private boolean isCivilizationName(String name) {
+		return serverInfo.civilizations.stream().anyMatch(civilization -> civilization.name.equalsIgnoreCase(name));
 	}
 
 	private void civilizationCheck(int civIndex) {
