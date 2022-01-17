@@ -2,7 +2,6 @@ package me.ice.ASMP2;
 
 import java.io.Serializable;
 
-@SuppressWarnings("serial")
 public class CivilizationType implements Serializable{
 	 String name;
 	String nickname;
@@ -16,7 +15,6 @@ public class CivilizationType implements Serializable{
 		return "[" + nickname + "]" + " " + name;
 	}
 	
-	@Override
 	public boolean equals(Object o) {
 		
 		// If the object is compared with itself then return true 

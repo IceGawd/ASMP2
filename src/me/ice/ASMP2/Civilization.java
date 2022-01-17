@@ -5,9 +5,17 @@ import java.util.UUID;
 
 import org.bukkit.ChatColor;
 
-@SuppressWarnings("serial")
+
 public class Civilization implements Serializable{
+<<<<<<< Updated upstream
 	 CivilizationType type;
+=======
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	CivilizationType type;
+>>>>>>> Stashed changes
 	String name;
 	UUID leader;
 	ChatColor cc = ChatColor.WHITE;
@@ -19,7 +27,6 @@ public class Civilization implements Serializable{
 		leader = l;
 	}
 
-	@Override
 	public String toString() {
 		return cc + "[" + type.nickname + "]" + " " + name;
 	}
