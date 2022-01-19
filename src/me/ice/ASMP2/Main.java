@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+<<<<<<< Updated upstream
 import org.bukkit.Location;
 import org.bukkit.Material;
 <<<<<<< Updated upstream
@@ -19,16 +20,26 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 =======
+=======
+import org.bukkit.Material;
+>>>>>>> Stashed changes
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
+<<<<<<< Updated upstream
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.meta.ItemMeta;
+>>>>>>> Stashed changes
+=======
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 >>>>>>> Stashed changes
@@ -103,6 +114,7 @@ public class Main extends JavaPlugin {
 				}
 			}
 		}, 0, 20 * 60);
+<<<<<<< Updated upstream
 	ItemStack spyglass = new ItemStack(Material.SPYGLASS);
 	ItemMeta spymeta = spyglass.getItemMeta();
 	spymeta.setDisplayName("Searing Scope");
@@ -112,6 +124,17 @@ public class Main extends JavaPlugin {
 	scope.shape("B", "S");
 	scope.setIngredient('B', Material.ENCHANTED_BOOK);
 	scope.setIngredient('S', Material.SPYGLASS);
+=======
+		ItemStack spyglass = new ItemStack(Material.SPYGLASS);
+		ItemMeta spymeta = spyglass.getItemMeta();
+		spymeta.setDisplayName("Searing Scope");
+		spyglass.addEnchantment(Enchantment.FIRE_ASPECT, 5);
+		NamespacedKey key = new NamespacedKey(this, "Searing Scope");
+		ShapedRecipe scope = new ShapedRecipe(key, spyglass);
+		scope.shape("B", "S");
+		scope.setIngredient('B', Material.ENCHANTED_BOOK);
+		scope.setIngredient('S', Material.SPYGLASS);
+>>>>>>> Stashed changes
 	}
 	
 	@Override
