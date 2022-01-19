@@ -89,7 +89,15 @@ public class Main extends JavaPlugin {
 			}
 
 		}, 0, 20 * 60);
-		
+		ItemStack spyglass = new ItemStack(Material.SPYGLASS);
+	    ItemMeta spymeta = spyglass.getItemMeta();
+	    spymeta.setDisplayName("Searing Scope");
+	    spyglass.addEnchantment(Enchantment.FIRE_ASPECT, 5);
+	    NamespacedKey key = new NamespacedKey(this, "Searing Scope");
+	    ShapedRecipe scope = new ShapedRecipe(key, spyglass);
+	    scope.shape("B", "S");
+	    scope.setIngredient('B', Material.ENCHANTED_BOOK);
+	    scope.setIngredient('S', Material.SPYGLASS);
 	}
 
 	public static void setName(Player p, Civilization civ) {
