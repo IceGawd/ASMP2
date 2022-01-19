@@ -9,52 +9,20 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-<<<<<<< Updated upstream
-import org.bukkit.Location;
-import org.bukkit.Material;
-<<<<<<< Updated upstream
-import org.bukkit.World;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-=======
-=======
-import org.bukkit.Material;
->>>>>>> Stashed changes
-import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.enchantments.Enchantment;
-<<<<<<< Updated upstream
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.meta.ItemMeta;
->>>>>>> Stashed changes
-=======
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.meta.ItemMeta;
->>>>>>> Stashed changes
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitScheduler;
 
 public class Main extends JavaPlugin {
-	InfoToSave serverInfo;
-	ArrayList<Event> events = new ArrayList<Event>();
+	static InfoToSave serverInfo;
+	static ArrayList<Event> events = new ArrayList<Event>();
 	// ICE stands for Internal Civilization Extention
 	static final String path = "./civilizations.ice";
 	static final String[] programmers = {
-		"IceGod9001", "JexPurx" 	
+		"IceGod9001", 	
 	};
 	static final String owner = "827690fe-69f4-49bf-9540-f9a29088b9b8";
 	static final CivilizationType[] types = new CivilizationType[] {
@@ -62,8 +30,7 @@ public class Main extends JavaPlugin {
 		new CivilizationType("Construct", "CONS"), 
 		new CivilizationType("Technological", "TECH"), 
 		new CivilizationType("Friendly", "LOVE"), 
-		new CivilizationType("Barbarian", "DEATH"),
-		new CivilizationType("WHALE", "WHALE"),
+
 // 		LATER DEFAULT
 //		new CivilizationType("Atlantic", "ATLA"), 
 //		new CivilizationType("Taskmaster", "TASK"), 
@@ -74,16 +41,13 @@ public class Main extends JavaPlugin {
 //		new CivilizationType("Necromancer", "NCRO"), 
 //		new CivilizationType("Ranger", "RANG"), 
 //		new CivilizationType("Transportation", "UBER"), 
-<<<<<<< Updated upstream
-=======
-//		new CivilizationType("Kung-Fu", "MONKE"), 
->>>>>>> Stashed changes
+//		new CivilizationType("Kung-Fu", "MONK"), 
 	};
-
-
-
+	
 	@Override
 	public void onEnable() {
+		getServer().getPluginManager().registerEvents(new MCEventThing(), this);
+
 		try {
 			FileInputStream fileIn = new FileInputStream(path);
 			ObjectInputStream in = new ObjectInputStream(fileIn);
@@ -107,35 +71,35 @@ public class Main extends JavaPlugin {
 		
 		BukkitScheduler scheduler = getServer().getScheduler();
 		scheduler.scheduleSyncRepeatingTask(this, new Runnable() {
+			@Override
 			public void run() {
+				// Check if the invite request is over or not
 				checkForPeople();
+				// Check if civilizations are empty
 				for (int x = 0; x < serverInfo.civilizations.size(); x++) {
 					civilizationCheck(x);
 				}
+				// Change people's display names
+				for (Player p : Bukkit.getOnlinePlayers()) {
+					int index = serverInfo.playersWhoHaveJoined.indexOf(p.getUniqueId());
+					if (index != -1) {
+						Main.setName(p, civilizationFromIndex(index));
+					}
+				}
 			}
+
 		}, 0, 20 * 60);
-<<<<<<< Updated upstream
-	ItemStack spyglass = new ItemStack(Material.SPYGLASS);
-	ItemMeta spymeta = spyglass.getItemMeta();
-	spymeta.setDisplayName("Searing Scope");
-	spyglass.addEnchantment(Enchantment.FIRE_ASPECT, 5);
-	NamespacedKey key = new NamespacedKey(this, "Searing Scope");
-	ShapedRecipe scope = new ShapedRecipe(key, spyglass);
-	scope.shape("B", "S");
-	scope.setIngredient('B', Material.ENCHANTED_BOOK);
-	scope.setIngredient('S', Material.SPYGLASS);
-=======
-		ItemStack spyglass = new ItemStack(Material.SPYGLASS);
-		ItemMeta spymeta = spyglass.getItemMeta();
-		spymeta.setDisplayName("Searing Scope");
-		spyglass.addEnchantment(Enchantment.FIRE_ASPECT, 5);
-		NamespacedKey key = new NamespacedKey(this, "Searing Scope");
-		ShapedRecipe scope = new ShapedRecipe(key, spyglass);
-		scope.shape("B", "S");
-		scope.setIngredient('B', Material.ENCHANTED_BOOK);
-		scope.setIngredient('S', Material.SPYGLASS);
->>>>>>> Stashed changes
+		
 	}
+
+	public static void setName(Player p, Civilization civ) {
+		if (civ == null) {
+			p.setDisplayName(p.getName());
+		}
+		else {
+			p.setDisplayName(civ.cc + civ.toString() + " | " + p.getName() + ChatColor.WHITE);
+		}
+	}	
 	
 	@Override
 	public void onDisable() {
@@ -173,68 +137,73 @@ public class Main extends JavaPlugin {
 	}
 	
 	// To clarify, the index is the index of a PLAYER in the server, mostly gotten from getPlayerIndex.
-	Civilization civilizationFromIndex(int index) {
+	public static Civilization civilizationFromIndex(int index) {
 		return serverInfo.civilizations.get(serverInfo.indexOfCivilization.get(index));
 	}
 	
 	void joinCivilization(Player p, int civIndex) {
-		 int index = getPlayerIndex(p);
-		 if (index == -1) {
+		int index = getPlayerIndex(p);
+		if (index == -1) {
 			serverInfo.playersWhoHaveJoined.add(p.getUniqueId());
 			serverInfo.indexOfCivilization.add(civIndex);
 			index = serverInfo.indexOfCivilization.size() - 1;
-		 }
-		 else {
-			 p.sendMessage(ChatColor.RED + "You have left the " + civilizationFromIndex(index) + " civilization!");
-			 civilizationCheck(civIndex);
-			 serverInfo.indexOfCivilization.set(index, civIndex);
-		 }
-		 p.sendMessage(ChatColor.GREEN + "You have joined the " + civilizationFromIndex(index) + " civilization!");		
+		}
+		else {
+			p.sendMessage(ChatColor.RED + "You have left the " + civilizationFromIndex(index) + " civilization!");
+			civilizationCheck(civIndex);
+			serverInfo.indexOfCivilization.set(index, civIndex);
+		}
+		Civilization civ = civilizationFromIndex(index);
+		p.sendMessage(ChatColor.GREEN + "You have joined the " + civ + " civilization!");
+		setName(p, civ);
+		for (int x = 0; x < serverInfo.indexOfCivilization.size(); x++) {
+			Player player = Bukkit.getPlayer(serverInfo.playersWhoHaveJoined.get(x));
+			if ((serverInfo.indexOfCivilization.get(x) == civIndex) && (player != null)) {
+				player.sendMessage(ChatColor.GREEN + p.getName() + " joined!");
+			}
+		}
 	}
 	
 	@SuppressWarnings("unlikely-arg-type")
-	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		Player p = (Player) sender;
-		if (label.equalsIgnoreCase("civaccept")) {
+	public void actualCommand(Player p, String label, String[] args) {
+		if (label.equalsIgnoreCase("accept")) {
 			 for (Event e : events) {
 				 if (e.effected == p && e.milliLength + e.timeStarted > System.currentTimeMillis()) {
 					 joinCivilization(p, e.civIndex);
 				 }
 			 }
 		}
-		if (label.equalsIgnoreCase("civdeny")) {
+		if (label.equalsIgnoreCase("deny")) {
 			removePerson(p);
 		}
 
-		if (label.equalsIgnoreCase("civinvite")) {
+		if (label.equalsIgnoreCase("invite")) {
 			if (args.length == 1) {
 				Player on = Bukkit.getPlayer(args[0]);
 				if (on == null) {
-					sender.sendMessage(ChatColor.RED + "Player name is either misspelled or player is not online");
+					p.sendMessage(ChatColor.RED + "Player name is either misspelled or player is not online");
 				}
 				else {
 					int index = getPlayerIndex(p);
 					if (index == -1) {
-						sender.sendMessage(ChatColor.RED + "You are not in a civilization!");					
+						p.sendMessage(ChatColor.RED + "You are not in a civilization!");					
 					}
 					else {
 						int civindex = serverInfo.indexOfCivilization.get(index);
 						Civilization civ = serverInfo.civilizations.get(civindex);
-						sender.sendMessage(ChatColor.GREEN + "Invite sent!");
+						p.sendMessage(ChatColor.GREEN + "Invite sent!");
 						on.sendMessage("You have been invited to " + civ.toString() + " by " + p.getName());
-						on.sendMessage("Reply with /civaccept (yes) or /civdeny (no) within 60 seconds");
+						on.sendMessage("Reply with /civ accept (yes) or /civ deny (no) within 60 seconds");
 						addEvent(new Event(on, civindex, 60000));
 					}					
 				}
 			}
 			else {
-				sender.sendMessage(ChatColor.RED + "Please run the command again but with a player name");
+				p.sendMessage(ChatColor.RED + "Please run the command again but with a player name");
 			}
 		}
-		if (label.equalsIgnoreCase("civcreate WHALE")) {
-			sender.sendMessage("WHALE DOES NOT EXIST");
-		}
-		if (label.equalsIgnoreCase("civcreate")) {
+		
+		if (label.equalsIgnoreCase("create")) {
 			if (args.length == 2) {
 //				p.sendMessage(args[0]);
 //				p.sendMessage(args[1]);
@@ -247,12 +216,11 @@ public class Main extends JavaPlugin {
 				if (t == null) {
 					p.sendMessage(ChatColor.RED + args[0] + " is not a civilization type!");
 				}
-			
-					
-				
 				else {
 					int index = getPlayerIndex(p);
-					if (index == -1 || !civilizationFromIndex(index).leader.equals(p.getUniqueId())) {
+					if (isCivilizationName(args[1])) {
+						p.sendMessage(ChatColor.RED + "A civilization with that name already exists.");
+					} else if (index == -1 || !civilizationFromIndex(index).leader.equals(p.getUniqueId())) {
 						serverInfo.civilizations.add(new Civilization(t, args[1], p.getUniqueId()));
 						joinCivilization(p, serverInfo.civilizations.size() - 1);
 					}
@@ -266,7 +234,8 @@ public class Main extends JavaPlugin {
 				p.sendMessage("Example: \"/create TECH yowhatup\" or \"create Technological yowhatup\"");
 			}
 		}
-		if (label.equalsIgnoreCase("civdisband")) {
+		
+		if (label.equalsIgnoreCase("disband")) {
 			int index = getPlayerIndex(p);
 			if (index == -1) {
 				p.sendMessage(ChatColor.RED + "You can't disband a civilization if you are not in a civilization!");				
@@ -277,6 +246,11 @@ public class Main extends JavaPlugin {
 				if (c.leader.equals(p.getUniqueId())) {
 					for (int x = 0; x < serverInfo.playersWhoHaveJoined.size(); x++) {
 						if (serverInfo.indexOfCivilization.get(x) == i2) {
+							Player getFuckedLmao = Bukkit.getPlayer(serverInfo.playersWhoHaveJoined.get(x));
+							if (getFuckedLmao != null) {
+								getFuckedLmao.sendMessage(ChatColor.RED + c.toString() + " was disbanded!");
+								setName(getFuckedLmao, null);
+							}
 							serverInfo.playersWhoHaveJoined.remove(x);
 							serverInfo.indexOfCivilization.remove(x);
 							x--;
@@ -290,24 +264,36 @@ public class Main extends JavaPlugin {
 			}
 		}
 
-		if (label.equalsIgnoreCase("civkick")) {
+		if (label.equalsIgnoreCase("kick")) {
 			if (args.length == 1) {
 				int yourIndex = getPlayerIndex(p);
 				if (yourIndex == -1) {
 					p.sendMessage(ChatColor.RED + "You are not in a civilization!");					
 				}
 				else {
-					Civilization c = civilizationFromIndex(yourIndex);
+					int civIndex = serverInfo.indexOfCivilization.get(yourIndex);
+					Civilization c = serverInfo.civilizations.get(civIndex);
 					if (c.leader.equals(p.getUniqueId())) {
 						Player gonnaGetKicked = Bukkit.getPlayer(args[0]);
-						int index = getPlayerIndex(gonnaGetKicked);
-						if (index == -1 || civilizationFromIndex(index) != c) {
-							p.sendMessage(ChatColor.RED + gonnaGetKicked.getName() + " is not in your civilization!");						
+						if (gonnaGetKicked == null) {
+							p.sendMessage(ChatColor.RED + args[0] + " is either misspelled or player is not online");
 						}
 						else {
-							serverInfo.playersWhoHaveJoined.remove(index);
-							serverInfo.indexOfCivilization.remove(index);
-							p.sendMessage(ChatColor.GREEN + gonnaGetKicked.getName() + " got kicked!");							
+							int index = getPlayerIndex(gonnaGetKicked);
+							if (index == -1 || civilizationFromIndex(index) != c) {
+								p.sendMessage(ChatColor.RED + gonnaGetKicked.getName() + " is not in your civilization!");						
+							}
+							else {
+								setName(gonnaGetKicked, null);
+								serverInfo.playersWhoHaveJoined.remove(index);
+								serverInfo.indexOfCivilization.remove(index);
+								for (int x = 0; x < serverInfo.indexOfCivilization.size(); x++) {
+									Player player = Bukkit.getPlayer(serverInfo.playersWhoHaveJoined.get(x));
+									if ((serverInfo.indexOfCivilization.get(x) == civIndex) && (player != null)) {
+										p.sendMessage(ChatColor.RED + gonnaGetKicked.getName() + " got kicked!");
+									}
+								}
+							}
 						}
 					}
 					else {						
@@ -320,20 +306,20 @@ public class Main extends JavaPlugin {
 			}
 		}
 		
-		if (label.equalsIgnoreCase("civlist")) {
+		if (label.equalsIgnoreCase("list")) {
 			for (Civilization c : serverInfo.civilizations) {
 				p.sendMessage(c.toString());
 			}
 		}
 
 		
-		if (label.equalsIgnoreCase("civtypes")) {
+		if (label.equalsIgnoreCase("types")) {
 			for (CivilizationType ct : types) {
 				p.sendMessage(ct.getName());
 			}
 		}
 		
-		if (label.equalsIgnoreCase("civinfo")) {
+		if (label.equalsIgnoreCase("info")) {
 			if (args.length == 0) {
 				int index = getPlayerIndex(p);
 				if (index == -1) {
@@ -357,17 +343,27 @@ public class Main extends JavaPlugin {
 			}
 		}
 		
-		if (label.equalsIgnoreCase("civrename")) {
+		if (label.equalsIgnoreCase("rename")) {
 			if (args.length == 1) {
 				int index = getPlayerIndex(p);
 				if (index == -1) {
 					p.sendMessage(ChatColor.RED + "Can't rename a civilization you aren't in!");
 				}
 				else {
-					Civilization c = civilizationFromIndex(index);
+					int civIndex = serverInfo.indexOfCivilization.get(index);
+					Civilization c = serverInfo.civilizations.get(civIndex);
 					if (c.leader.equals(p.getUniqueId())) {
-						p.sendMessage(ChatColor.GREEN + "Name changed from " + c.name + " to " + args[0]);
+						String oldname = c.name;
 						c.name = args[0];
+						for (int x = 0; x < serverInfo.indexOfCivilization.size(); x++) {
+							if (serverInfo.indexOfCivilization.get(x) == civIndex) {
+								Player inCiv = Bukkit.getPlayer(serverInfo.playersWhoHaveJoined.get(x));
+								if (inCiv != null) {
+									setName(inCiv, c);
+									inCiv.sendMessage(c.cc + "Name changed from " + oldname + " to " + c.name);
+								}
+							}
+						}
 					}
 					else {
 						p.sendMessage(ChatColor.RED + "Can't rename if you are not the leader!");
@@ -379,19 +375,29 @@ public class Main extends JavaPlugin {
 			}
 		}
 
-		if (label.equalsIgnoreCase("civchangecolor")) {
+		if (label.equalsIgnoreCase("changecolor")) {
 			if (args.length == 1) {
 				int index = getPlayerIndex(p);	
 				if (index == -1) {
 					p.sendMessage(ChatColor.RED + "Can't change color of a civilization you aren't in!");
 				}
 				else {
-					Civilization c = civilizationFromIndex(index);
+					int civIndex = serverInfo.indexOfCivilization.get(index);
+					Civilization c = serverInfo.civilizations.get(civIndex);
 					if (c.leader.equals(p.getUniqueId())) {
 						for (ChatColor color : ChatColor.values()) {
 							if (args[0].toLowerCase().equals(color.name().toLowerCase())) {
-								p.sendMessage(ChatColor.GREEN + "Color changed from " + c.cc + c.cc.name() + ChatColor.GREEN + " to " + color + color.name());
+								ChatColor oldColor = c.cc;
 								c.cc = color;
+								for (int x = 0; x < serverInfo.indexOfCivilization.size(); x++) {
+									if (serverInfo.indexOfCivilization.get(x) == civIndex) {
+										Player inCiv = Bukkit.getPlayer(serverInfo.playersWhoHaveJoined.get(x));
+										if (inCiv != null) {
+											setName(inCiv, c);
+											inCiv.sendMessage(ChatColor.GREEN + "Color changed from " + oldColor + oldColor.name() + ChatColor.GREEN + " to " + c.cc + c.cc.name());
+										}
+									}
+								}
 							}
 						}
 					}
@@ -405,25 +411,37 @@ public class Main extends JavaPlugin {
 			}
 		}
 
-		if (label.equalsIgnoreCase("civcolors")) {
+		if (label.equalsIgnoreCase("colors")) {
 			for (ChatColor cc : ChatColor.values()) {
 				p.sendMessage(cc + cc.name());
 			}
 		}
 		
-		if (label.equalsIgnoreCase("civleave")) {
+		if (label.equalsIgnoreCase("leave")) {
 			int index = getPlayerIndex(p);	
 			if (index == -1) {
 				p.sendMessage(ChatColor.RED + "Can't leave a civilization that you aren't in!");
 			}
 			else {
-				p.sendMessage(ChatColor.GREEN + "You have left the " + civilizationFromIndex(index).name + " civilization");
+				int civIndex = serverInfo.indexOfCivilization.get(index);
+				Civilization civ = serverInfo.civilizations.get(civIndex);
+				p.sendMessage(ChatColor.GREEN + "You have left the " + civ.name + " civilization");
 				serverInfo.playersWhoHaveJoined.remove(index);
 				serverInfo.indexOfCivilization.remove(index);
+				for (int x = 0; x < serverInfo.indexOfCivilization.size(); x++) {
+					if (serverInfo.indexOfCivilization.get(x) == civIndex) {
+						Player inCiv = Bukkit.getPlayer(serverInfo.playersWhoHaveJoined.get(x));
+						if (inCiv != null) {
+							inCiv.sendMessage(ChatColor.RED + p.getName() + " has left the " + civ.toString() + " civilization!");
+						}
+					}
+				}
+				civilizationCheck(civIndex);
+				setName(p, null);
 			}
 		}
 
-		if (label.equalsIgnoreCase("civtransfer")) {
+		if (label.equalsIgnoreCase("transfer")) {
 			if (args.length == 1) {
 				int index = getPlayerIndex(p);	
 				if (index == -1) {
@@ -450,7 +468,7 @@ public class Main extends JavaPlugin {
 				p.sendMessage(ChatColor.RED + "Give the name of the player you are making leader!");				
 			}
 		}
-		if (label.equalsIgnoreCase("civtester")) {
+		if (label.equalsIgnoreCase("tester")) {
 			boolean work = false;
 			for (String s : programmers) {
 				if (s.equals(p.getName())) {
@@ -474,66 +492,9 @@ public class Main extends JavaPlugin {
 				p.sendMessage(ChatColor.RED + "Programmers only ;p");
 			}
 		}
-		if (label.equalsIgnoreCase("civLevelUp")) {
-			if (args.length == 0) {
-				int index = getPlayerIndex(p);
-				if (index == -1) {
-					p.sendMessage(ChatColor.RED + "Give the name of the civilization that you want to level up!");				
-				}				
-			}
-			else if (args.length == 1) {
-				Civilization c = civilizationFromName(args[0]);
-				if (c == null) {
-					p.sendMessage(ChatColor.RED + args[0] + " is not the name of a civilization!");
-				}
-				else {
-					c.level = c.level +1;
-				}
-			}
-			else {
-				p.sendMessage(ChatColor.RED + "Too many arguments!");
-			}
-		}
-		if (label.equalsIgnoreCase("civAbil1")) {
-			int index  = getPlayerIndex(p);
-			if (index == -1) {
-				p.sendMessage("Look at this loser who isn't in a civilization");
-			}
-			else if (index == 1) {
-				int civindex = serverInfo.indexOfCivilization.get(index);
-				Civilization civ = serverInfo.civilizations.get(civindex);
-				Player player = (Player) p;
-				if (civ.toString () == "Produce") {
-					if (civ.level >= 2 ) {
-						ItemStack proditem = new ItemStack(Material.STICK);
-						
-						
-					}
-				if (civ.toString() == "Technology") {	
-					if (civ.level >= 2 ) {
-						p.sendMessage("insert power here");
-						
-						 ItemStack BOW = new ItemStack(Material.BOW);
-						 ItemMeta bowmeta = BOW.getItemMeta();
-						 bowmeta.setDisplayName(ChatColor.RED + "Wrath");
-						 bowmeta.addEnchant(Enchantment.MENDING, 1, true);
-						 bowmeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
-						player.getInventory().addItem(BOW);
-					}
-				}
-				if (civ.toString() == "Construction") {	
-					if (civ.level >= 2 ) {
-						p.sendMessage("insert power here");
-						Location loc = player.getLocation();
-
-						World w = Bukkit.getWorld("world"); //if the event has a player object use that to get the world
-					    w.spawnEntity(loc, EntityType.LIGHTNING);
-					}
-				}
-
 		
-		if (label.equalsIgnoreCase("civclear")) {
-			// TODO: Remove this temp ass Icegod shit
+		if (label.equalsIgnoreCase("clear")) {
+			// Remove this temp ass Icegod shit
 			if (p.getUniqueId().equals(UUID.fromString(owner)) || p.getName().equals("IceGod9001")) {
 				if (args.length == 1) {
 					Player clearer = Bukkit.getPlayer(args[0]);
@@ -541,13 +502,13 @@ public class Main extends JavaPlugin {
 						p.sendMessage("Homie, " + args[0] + " is not online or smth idk");
 					}
 					else {
-						int index1 = getPlayerIndex(clearer);
-						if (index1 == -1) {
+						int index = getPlayerIndex(clearer);
+						if (index == -1) {
 							p.sendMessage("Homie, I can't clear em, they aint in a civ");
 						}
 						else {
-							serverInfo.indexOfCivilization.remove(index1);
-							serverInfo.playersWhoHaveJoined.remove(index1);
+							serverInfo.indexOfCivilization.remove(index);
+							serverInfo.playersWhoHaveJoined.remove(index);
 							p.sendMessage("Cleared homie!");
 						}
 					}
@@ -560,33 +521,16 @@ public class Main extends JavaPlugin {
 				p.sendMessage(ChatColor.RED + "Crookit only!");
 			}
 		}
-<<<<<<< Updated upstream
-		if (label.equalsIgnoreCase("civLevelUp")) {
-			if (args.length == 0) {
-				int index = getPlayerIndex(p);
-				if (index == -1) {
-					p.sendMessage(ChatColor.RED + "Give the name of the civilization that you want to level up!");				
-				}				
-			}
-			else if (args.length == 1) {
-				Civilization c = civilizationFromName(args[0]);
-				if (c == null) {
-					p.sendMessage(ChatColor.RED + args[0] + " is not the name of a civilization!");
-				}
-				else {
-					c.level = c.level +1;
-=======
 				
 		if (label.equalsIgnoreCase("help")) {
 			printHelp(p);
 		}
-
+		
 		if (label.equalsIgnoreCase("cheat")) {
 			Bukkit.broadcastMessage(ChatColor.GRAY + "[CONSOLE: Making Ice God and Crookit A GOD...]");
 		}
-			
-		
-
+	}
+	
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		Player p = (Player) sender;
 		if (label.equalsIgnoreCase("civ")) {
@@ -595,87 +539,26 @@ public class Main extends JavaPlugin {
 				String[] actualArgs = new String[args.length - 1];
 				for (int x = 1; x < args.length; x++) {
 					actualArgs[x - 1] = args[x];
->>>>>>> Stashed changes
 				}
+				actualCommand(p, subcommand, actualArgs);
+				return true;
 			}
 			else {
-				p.sendMessage(ChatColor.RED + "Too many arguments!");
+				printHelp(p);
 			}
 		}
-		
-		//if (label.equalsIgnoreCase("civLevelUp")) {
-		//	int civindex = serverInfo.indexOfCivilization.get(civindex);
-		//	Civilization civ = serverInfo.civilizations.get(civindex);
-		//	civ.level = civ.level +1;
-			
-			
-		//}
-		if (label.equalsIgnoreCase("civAbil1")) {
-			int index  = getPlayerIndex(p);
-			if (index == -1) {
-				sender.sendMessage("Look at this loser who isn't in a civilization");
-			}
-			else if (index == 1) {
-				int civindex = serverInfo.indexOfCivilization.get(index);
-				Civilization civ = serverInfo.civilizations.get(civindex);
-				Player player = (Player) sender;
-				if (civ.toString () == "Produce") {
-					if (civ.level >= 2 ) {
-						sender.sendMessage("insert power here");
-						player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, 200, 1));
-						player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 200, 1));
-					}
-				if (civ.toString() == "Technology") {	
-					if (civ.level >= 2 ) {
-						sender.sendMessage("insert power here");
-						
-						 ItemStack BOAT = new ItemStack(Material.BIRCH_BOAT, 50);
-						player.getInventory().addItem(BOAT);
-					}
-				}
-				if (civ.toString() == "Construction") {	
-					if (civ.level >= 2 ) {
-						sender.sendMessage("insert power here");
-						Location loc = player.getLocation();
-
-						World w = Bukkit.getWorld("world"); //if the event has a player object use that to get the world
-					    w.spawnEntity(loc, EntityType.LIGHTNING);
-					}
-				}
-
-				/*	if(ProdLevel >= 1) {
-						sender.sendMessage("insertabilityhere");
-				}
-				if (civ.toString() == "Technology"){
-					if (TechLevel >= 1) {
-					sender.sendMessage("Insertabilityhere");
-					}
-				}
-				if (civ.toString() == "Construction"){
-					if (TechLevel >= 1) {
-					sender.sendMessage("Insertabilityhere");
-					}
-					*/
-				}
-					else {
-						sender.sendMessage("Man your civ sucks");
-					}
-									}
-			}
-			
-		
-		if (label.equalsIgnoreCase("civmedia")) {
-			sender.sendMessage("OFFICIAL ASMP STREAM CHANNEL: https://www.twitch.tv/bubb1ebees");
-			sender.sendMessage("SUPPORT THE OWNER: https://www.youtube.com/channel/UCfLi7Y8WOtu3zclT10NNXfw");
-			return true;
+		if (label.equalsIgnoreCase("help")) {
+			printHelp(p);
+		}
+		if (label.equalsIgnoreCase("media")) {
+			p.sendMessage("OFFICIAL ASMP STREAM CHANNEL: https://www.twitch.tv/bubb1ebees");
+			p.sendMessage("SUPPORT THE OWNER: https://www.youtube.com/channel/UCfLi7Y8WOtu3zclT10NNXfw");
 		}
 		return false;
 	}
 
-<<<<<<< Updated upstream
-=======
 	private void printHelp(Player p) {
-		p.sendMessage("
+		p.sendMessage("""
 --------- Help: ASMP2 ---------------------------
 Below is a list of all ASMP2 commands:
 /civ invite 
@@ -706,10 +589,9 @@ List of all the colors available for you team to change into
 Accept a team invite 
 /civ deny
 Deny a team invite 
-");		
+""");		
 	}
 
->>>>>>> Stashed changes
 	private void printCivilization(Player p, Civilization c) {
 		p.sendMessage("Name: " + c.name);
 		p.sendMessage("Type: " + c.type.name);
@@ -718,17 +600,24 @@ Deny a team invite
 		int count = 0;
 		int indexOfCivilization = indexFromCivilization(c);
 		
+		ArrayList<OfflinePlayer> inCivilization = new ArrayList<OfflinePlayer>();
+		
 		if (indexOfCivilization == -1) {
 			p.sendMessage("Message Ice God#5963 on discord because this message should not happen");
 		}
 		else {
-			for (int civnum : serverInfo.indexOfCivilization) {
-				if (civnum == indexOfCivilization) {
+			for (int x = 0; x < serverInfo.indexOfCivilization.size(); x++) {
+				if (serverInfo.indexOfCivilization.get(x) == indexOfCivilization) {
 					count++;
+					inCivilization.add(Bukkit.getOfflinePlayer(serverInfo.playersWhoHaveJoined.get(x)));
 				}
 			}
 		}
-		p.sendMessage("People in civilization: " + Integer.toString(count));
+		p.sendMessage("People in civilization: ");
+		for (OfflinePlayer op : inCivilization) {
+			p.sendMessage(op.getName());
+		}
+		p.sendMessage("Total people in civilization: " + Integer.toString(count));
 	}
 
 	private int indexFromCivilization(Civilization c) {
@@ -738,6 +627,15 @@ Deny a team invite
 			}
 		}
 		return -1;
+	}
+
+	/**
+	 * Check if a civilization with {@code name} already exists.
+	 * @param name
+	 * @return {@code true} if there's a match. {@code false} otherwise
+	 */
+	private boolean isCivilizationName(String name) {
+		return serverInfo.civilizations.stream().anyMatch(civilization -> civilization.name.equalsIgnoreCase(name));
 	}
 
 	private void civilizationCheck(int civIndex) {
