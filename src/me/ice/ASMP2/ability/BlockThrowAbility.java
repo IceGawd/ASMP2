@@ -10,6 +10,10 @@ public class BlockThrowAbility {
     public static void test(Player player, Vector velocity) {
         var world = player.getWorld();
         var blockInHand = player.getInventory().getItemInMainHand();
+        if (!blockInHand.getType().isBlock() || blockInHand.getType().isAir()) {
+            player.sendMessage("The item in hand is not a block. (" + blockInHand.getType() + ")");
+            return;
+        }
         var fallingBlock = world.spawnFallingBlock(player.getLocation(), Objects.requireNonNull(blockInHand.getData()));
         fallingBlock.setVelocity(velocity);
     }
