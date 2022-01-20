@@ -5,8 +5,11 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.UUID;
+import java.util.Vector;
 
+import me.ice.ASMP2.ability.BlockThrowAbility;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -554,6 +557,14 @@ public class Main extends JavaPlugin {
 			p.sendMessage("OFFICIAL ASMP STREAM CHANNEL: https://www.twitch.tv/bubb1ebees");
 			p.sendMessage("SUPPORT THE OWNER: https://www.youtube.com/channel/UCfLi7Y8WOtu3zclT10NNXfw");
 		}
+
+		if (label.equalsIgnoreCase("testability")) {
+			var abilityName = args[0];
+			if (abilityName.equalsIgnoreCase("blockthrow")) {
+				BlockThrowAbility.test(p, new org.bukkit.util.Vector(1.0f, 1.0f, 1.0f));
+			}
+		}
+
 		return false;
 	}
 

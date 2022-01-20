@@ -7,3 +7,8 @@ commands:
   civ:
   help:
   media:
+
+# Developer commands used for testing abilities
+  testability:
+    description: Used for testing civilization abilities.
+    aliases: [ta]
