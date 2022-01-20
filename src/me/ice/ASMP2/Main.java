@@ -558,11 +558,12 @@ public class Main extends JavaPlugin {
 			p.sendMessage("SUPPORT THE OWNER: https://www.youtube.com/channel/UCfLi7Y8WOtu3zclT10NNXfw");
 		}
 
-		if (label.equalsIgnoreCase("testability")) {
-			var abilityName = args[0];
-			if (abilityName.equalsIgnoreCase("blockthrow")) {
-				BlockThrowAbility.test(p, new org.bukkit.util.Vector(1.0f, 1.0f, 1.0f));
-			}
+		if (label.equalsIgnoreCase("testabilityblockthrow")) {
+			var x = Float.parseFloat(args[0]);
+			var y = Float.parseFloat(args[1]);
+			var z = Float.parseFloat(args[2]);
+			BlockThrowAbility.test(p, new org.bukkit.util.Vector(x, y, z));
+			return true;
 		}
 
 		return false;

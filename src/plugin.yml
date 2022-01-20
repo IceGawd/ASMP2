@@ -9,6 +9,7 @@ commands:
   media:
 
 # Developer commands used for testing abilities
-  testability:
-    description: Used for testing civilization abilities.
-    aliases: [ta]
+  testabilityblockthrow:
+    description: Used for testing block throw ability.
+    usage: "Usage: /testabilityblockthrow <x> <y> <z>"
+    aliases: [tabt]
