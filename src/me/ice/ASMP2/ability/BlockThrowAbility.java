@@ -1,6 +1,7 @@
 package me.ice.ASMP2.ability;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.Vector;
 
 import java.util.Objects;
@@ -16,5 +17,6 @@ public class BlockThrowAbility {
         }
         var fallingBlock = world.spawnFallingBlock(player.getLocation(), Objects.requireNonNull(blockInHand.getData()));
         fallingBlock.setVelocity(velocity);
+        fallingBlock.setHurtEntities(true);
     }
 }
