@@ -116,7 +116,7 @@ public class Main extends JavaPlugin {
 		}
 	}
 	
-	int getPlayerIndex(Player p) {
+	public static int getPlayerIndex(Player p) {
 		UUID searchFor = p.getUniqueId();
 		
 		for (int x = 0; x < serverInfo.playersWhoHaveJoined.size(); x++) {
@@ -127,7 +127,7 @@ public class Main extends JavaPlugin {
 		return -1;
 	}
 
-	int getPlayerIndex(OfflinePlayer p) {
+	public static int getPlayerIndex(OfflinePlayer p) {
 		UUID searchFor = p.getUniqueId();
 		
 		for (int x = 0; x < serverInfo.playersWhoHaveJoined.size(); x++) {
@@ -139,7 +139,7 @@ public class Main extends JavaPlugin {
 	}
 
 	
-	Civilization civilizationFromName(String name) {
+	public static Civilization civilizationFromName(String name) {
 		for (Civilization c : serverInfo.civilizations) {
 			if (c.name.toLowerCase().equals(name.toLowerCase())) {
 				return c;
@@ -464,7 +464,8 @@ public class Main extends JavaPlugin {
 					p.sendMessage(ChatColor.RED + "Can't transfer leaders of a civilization you aren't in!");
 				}
 				else {
-					Civilization c = civilizationFromIndex(index);
+					int civIndex = serverInfo.indexOfCivilization.get(index);
+					Civilization c = serverInfo.civilizations.get(civIndex);
 					if (c.leader.equals(p.getUniqueId())) {
 						Player newLeader = Bukkit.getPlayer(args[0]);
 						if (newLeader == null) {
@@ -473,6 +474,12 @@ public class Main extends JavaPlugin {
 						else {
 							c.leader = newLeader.getUniqueId();
 							newLeader.sendMessage(ChatColor.GREEN + p.getName() + " transfered leadership to you. Congrats!");							
+							for (int x = 0; x < serverInfo.indexOfCivilization.size(); x++) {
+								if (serverInfo.indexOfCivilization.get(x) == civIndex) {
+									Player inCiv = Bukkit.getPlayer(serverInfo.playersWhoHaveJoined.get(x));
+									inCiv.sendMessage(ChatColor.GREEN + newLeader.getName() + " is the new leader of " + c.cc + c.name + ChatColor.GREEN + "!");
+								}
+							}
 						}
 					}
 					else {
@@ -484,6 +491,34 @@ public class Main extends JavaPlugin {
 				p.sendMessage(ChatColor.RED + "Give the name of the player you are making leader!");				
 			}
 		}
+		if (label.equalsIgnoreCase("friendlyfire")) {
+			int index = getPlayerIndex(p);	
+			if (index == -1) {
+				p.sendMessage(ChatColor.RED + "You are not in a civilization!");
+			}
+			else {
+				int civIndex = serverInfo.indexOfCivilization.get(index);
+				Civilization c = serverInfo.civilizations.get(civIndex);
+				if (c.leader.equals(p.getUniqueId())) {
+					c.friendlyFire = !c.friendlyFire;
+					for (int x = 0; x < serverInfo.indexOfCivilization.size(); x++) {
+						if (serverInfo.indexOfCivilization.get(x) == civIndex) {
+							Player inCiv = Bukkit.getPlayer(serverInfo.playersWhoHaveJoined.get(x));
+							if (c.friendlyFire) {
+								inCiv.sendMessage(c.cc + "Friendly fire is now " + ChatColor.RED + "OFF" + c.cc + " for " + c.name);
+							}
+							else {
+								inCiv.sendMessage(c.cc + "Friendly fire is now " + ChatColor.GREEN + "ON" + c.cc + " for " + c.name);
+							}
+						}
+					}
+				}
+				else {
+					p.sendMessage(ChatColor.RED + "You are not the leader of " + c.cc + c.name + ChatColor.RED + "!");
+				}
+			}
+		}
+		
 		if (label.equalsIgnoreCase("tester")) {
 			boolean work = false;
 			for (String s : programmers) {
