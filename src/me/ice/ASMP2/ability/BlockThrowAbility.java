@@ -13,6 +13,9 @@ public class BlockThrowAbility {
 
     private static final int maxChargeDuration = 3 * 20; // 3 * 20 = 60 ticks (3 seconds)
     private static final int blockPickupDistance = 4;
+    private static final Sound blockPickupSound = Sound.BLOCK_STONE_BREAK;
+    private static final Sound maxChargeSound = Sound.UI_BUTTON_CLICK;
+    private static final Sound chargingSound = Sound.BLOCK_AMETHYST_BLOCK_STEP;
     private static final Set<UUID> playersPerformingAbility = new HashSet<>();
 
     public static void test(Player player, Vector velocity) {
@@ -42,7 +45,7 @@ public class BlockThrowAbility {
         // Ensure that ray-tracing returned a block. If the result is valid
         // play block break sound indicating that a block has been picked up.
         if (result == null || (rayTracedBlock = result.getHitBlock()) == null) return;
-        player.playSound(rayTracedBlock.getLocation(), Sound.BLOCK_STONE_BREAK, 1.0f, 1.0f);
+        player.playSound(rayTracedBlock.getLocation(), blockPickupSound, 1.0f, 1.0f);
 
         if (!player.isBlocking())
             return;
@@ -59,16 +62,16 @@ public class BlockThrowAbility {
                 // are charging their shot.
                 if (player.isBlocking()) {
                     if (chargeDuration < maxChargeDuration) {
+                        if (chargeDuration > 0 && chargeDuration % 20 == 0) // Only play sound every second.
+                            player.playSound(player, chargingSound, 0.5f, 0.5f);
                         chargeDuration++;
-                        if (chargeDuration % 20 == 0) // Only play sound every second.
-                            player.playSound(player, Sound.BLOCK_AMETHYST_BLOCK_STEP, 0.5f, 0.5f);
                     } else {
                         // Check if the players shot is fully charged. If it is, then
                         // play a clicking sound. The boolean prevents the sound from being repeated while
                         // the players shot remains fully charged.
                         if (!fullyCharged) {
                             fullyCharged = true;
-                            player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
+                            player.playSound(player, maxChargeSound, 1.0f, 1.0f);
                         }
                     }
                 } else {
