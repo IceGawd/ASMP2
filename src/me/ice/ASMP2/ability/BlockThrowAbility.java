@@ -11,8 +11,9 @@ import java.util.*;
 
 public class BlockThrowAbility {
 
+    private static final int maxChargeDuration = 3 * 20; // 3 * 20 = 60 ticks (3 seconds)
     private static final int blockPickupDistance = 4;
-    private static Set<UUID> playersPerformingAbility = new HashSet<>();
+    private static final Set<UUID> playersPerformingAbility = new HashSet<>();
 
     public static void test(Player player, Vector velocity) {
         var world = player.getWorld();
@@ -49,7 +50,7 @@ public class BlockThrowAbility {
         playersPerformingAbility.add(player.getUniqueId());
 
         new BukkitRunnable() {
-            private int blockingDuration;
+            private int chargeDuration;
             private boolean fullyCharged;
 
             @Override
@@ -57,9 +58,10 @@ public class BlockThrowAbility {
                 // Check if the player is blocking. If they are, then they
                 // are charging their shot.
                 if (player.isBlocking()) {
-                    if (blockingDuration < 8) {
-                        blockingDuration++;
-                        player.playSound(player, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.5f, 0.5f);
+                    if (chargeDuration < maxChargeDuration) {
+                        chargeDuration++;
+                        if (chargeDuration % 20 == 0) // Only play sound every second.
+                            player.playSound(player, Sound.BLOCK_AMETHYST_BLOCK_STEP, 0.5f, 0.5f);
                     } else {
                         // Check if the players shot is fully charged. If it is, then
                         // play a clicking sound. The boolean prevents the sound from being repeated while
@@ -70,9 +72,7 @@ public class BlockThrowAbility {
                         }
                     }
                 } else {
-                    // The blocking duration is divided by 4 to cap the maximum speed a shot can get charged
-                    // to 2.0.
-                    shootBlock(player, rayTracedBlock, blockingDuration / 4.0f);
+                    shootBlock(player, rayTracedBlock, chargeDuration / 30.0f); // Dividing by 30 makes max speed 2
 
                     // Remove the player from the list of players that are currently performing this ability.
                     // If the player isn't removed then they will repeatedly shoot blocks.
@@ -82,7 +82,7 @@ public class BlockThrowAbility {
                     cancel();
                 }
             }
-        }.runTaskTimer(Main.getInstance(), 5, 5);
+        }.runTaskTimer(Main.getInstance(), 1, 1);
     }
 
     /**
@@ -93,7 +93,8 @@ public class BlockThrowAbility {
      * @param speed   The speed of the block.
      */
     private static void shootBlock(Player shooter, Block block, float speed) {
-        var blockProjectile = shooter.getWorld().spawnFallingBlock(shooter.getLocation(), block.getBlockData());
-        blockProjectile.setVelocity(shooter.getLocation().getDirection().multiply(speed));
+        var projectileVector = shooter.getLocation().getDirection().multiply(speed);
+        var blockProjectile = shooter.getWorld().spawnFallingBlock(shooter.getEyeLocation(), block.getBlockData());
+        blockProjectile.setVelocity(projectileVector);
     }
 }
