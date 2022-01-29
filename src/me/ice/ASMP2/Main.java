@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,6 +18,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionData;
@@ -166,7 +168,6 @@ public class Main extends JavaPlugin {
 		return -1;
 	}
 
-	
 	public static Civilization civilizationFromName(String name) {
 		for (Civilization c : serverInfo.civilizations) {
 			if (c.name.toLowerCase().equals(name.toLowerCase())) {
@@ -688,6 +689,25 @@ public class Main extends JavaPlugin {
 			itemsToLookFor.add(addLore(new ItemStack(Material.IRON_LEGGINGS), name));
 			itemsToLookFor.add(addLore(new ItemStack(Material.IRON_BOOTS), name));
 			itemsToLookFor.add(addLore(new ItemStack(Material.CAKE), name));
+		}
+		
+		PlayerInventory pi = p.getInventory();
+		for (ItemStack is : itemsToLookFor) {
+			HashMap<Integer, ? extends ItemStack> hm = pi.all(is.getType());
+			boolean notFound = true;
+			for (int index : hm.keySet()) {
+				ItemStack inQuestion = hm.get(index);
+				if (inQuestion.getItemMeta().getLore().contains(name)) {
+					if (inQuestion.getAmount() < is.getAmount()) {
+						inQuestion.setAmount(is.getAmount());
+						notFound = false;
+					}
+				}
+			}
+			
+			if (notFound) {
+				pi.addItem(is);
+			}
 		}
 	}
 
