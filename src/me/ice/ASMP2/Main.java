@@ -5,15 +5,22 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionType;
 import org.bukkit.scheduler.BukkitScheduler;
 
 public class Main extends JavaPlugin {
@@ -24,11 +31,17 @@ public class Main extends JavaPlugin {
 	static final String[] programmers = {
 		"IceGod9001", 	
 	};
+	
 	static final String owner = "827690fe-69f4-49bf-9540-f9a29088b9b8";
+	static final Material[] buildingBlocks = new Material[] {
+		Material.COBBLESTONE,
+		Material.DIRT,
+		Material.NETHERRACK
+	};
+	
 	static final CivilizationType[] types = new CivilizationType[] {
 		new CivilizationType("Produce", "PROD"), 
 		new CivilizationType("Construct", "CONS"), 
-		new CivilizationType("Technological", "TECH"), 
 		new CivilizationType("Friendly", "LOVE"), 
 
 // 		LATER DEFAULT
@@ -44,8 +57,15 @@ public class Main extends JavaPlugin {
 //		new CivilizationType("Kung-Fu", "MONK"), 
 	};
 	
+	static final CivilizationType[] oldCivs = new CivilizationType[] {
+		new CivilizationType("Technological", "TECH"), 	
+	};
+	static final CivilizationType[] replacement = new CivilizationType[] {
+		getTypeFromName("Construct")
+	};
+	
 	@Override
-	public void onEnable() {
+	public void onEnable() {	
 		getServer().getPluginManager().registerEvents(new MCEventThing(), this);
 
 		try {
@@ -61,6 +81,14 @@ public class Main extends JavaPlugin {
 			e.printStackTrace();
 		}
 		
+		
+		for (Civilization c : serverInfo.civilizations) {
+			for (int x = 0; x < oldCivs.length; x++) {
+				if (c.type.equals(oldCivs[x])) {
+					c.type = replacement[x];
+				}
+			}
+		}
 		for (int x = 0; x < serverInfo.playersWhoHaveJoined.size(); x++) {
 			System.out.println("UUIDs: " + serverInfo.playersWhoHaveJoined.get(x));
 		}
@@ -176,7 +204,6 @@ public class Main extends JavaPlugin {
 		}
 	}
 	
-	@SuppressWarnings("unlikely-arg-type")
 	public void actualCommand(Player p, String label, String[] args) {
 		if (label.equalsIgnoreCase("accept")) {
 			 for (Event e : events) {
@@ -219,12 +246,7 @@ public class Main extends JavaPlugin {
 			if (args.length == 2) {
 //				p.sendMessage(args[0]);
 //				p.sendMessage(args[1]);
-				CivilizationType t = null;
-				for (CivilizationType c : types) {
-					if (c.equals(args[0])) {
-						t = c;
-					}
-				}
+				CivilizationType t = getTypeFromName(args[0]);
 				if (t == null) {
 					p.sendMessage(ChatColor.RED + args[0] + " is not a civilization type!");
 				}
@@ -232,7 +254,8 @@ public class Main extends JavaPlugin {
 					int index = getPlayerIndex(p);
 					if (isCivilizationName(args[1])) {
 						p.sendMessage(ChatColor.RED + "A civilization with that name already exists.");
-					} else if (index == -1 || !civilizationFromIndex(index).leader.equals(p.getUniqueId())) {
+					}
+					else if (index == -1 || !civilizationFromIndex(index).leader.equals(p.getUniqueId())) {
 						serverInfo.civilizations.add(new Civilization(t, args[1], p.getUniqueId()));
 						joinCivilization(p, serverInfo.civilizations.size() - 1);
 					}
@@ -580,8 +603,101 @@ public class Main extends JavaPlugin {
 		if (label.equalsIgnoreCase("cheat")) {
 			Bukkit.broadcastMessage(ChatColor.GRAY + "[CONSOLE: Making Ice God and Crookit A GOD...]");
 		}
+		
+		if (label.equalsIgnoreCase("kit")) {
+			int index = getPlayerIndex(p);
+			if (index == 0) {
+				p.sendMessage(ChatColor.RED + "You are not in a civilization!");
+			}
+			else {
+				Civilization c = civilizationFromIndex(index);
+				if (c.level >= 2) {
+					kitRestock(p, c.name, c.type);
+				}
+				else {
+					p.sendMessage(ChatColor.RED + "This is only for level 2 and above civilizations and your civilization is level 1");
+				}
+			}
+		}
+		
+		if (label.equalsIgnoreCase("levelup")) {
+			if (p.getUniqueId().equals(UUID.fromString(owner))) {
+				if (args.length == 1) {
+					Civilization c = civilizationFromName(args[0]);
+					if (c == null) {
+						p.sendMessage("You might have misspelled G");
+					}
+					else {
+						c.level++;
+						String message = ChatColor.GREEN + "LEVEL UP COMPLETE: " + c.cc + c.name + ChatColor.GREEN + " is now level " + c.level;
+						p.sendMessage(message);
+					}
+				}
+				else {
+					p.sendMessage("Give the name of the civ only homie");
+				}
+			}
+			else {
+				p.sendMessage(ChatColor.RED + "You are not Crookit!");
+			}
+		}
 	}
 	
+	@SuppressWarnings("unlikely-arg-type")
+	private static CivilizationType getTypeFromName(String string) {
+		CivilizationType t = null;
+		for (CivilizationType c : types) {
+			if (c.equals(string)) {
+				t = c;
+			}
+		}
+		return t;
+	}
+
+	private void kitRestock(Player p, String name, CivilizationType type) {
+		ArrayList<ItemStack> itemsToLookFor = new ArrayList<ItemStack>();
+		if (type.name.equals("Produce")) {
+			ItemStack jumpBoost = new ItemStack(Material.POTION);
+			PotionMeta pm = (PotionMeta) jumpBoost.getItemMeta();
+			pm.setBasePotionData(new PotionData(PotionType.JUMP));
+			itemsToLookFor.add(addLore(jumpBoost, name));
+
+			ItemStack random = new ItemStack(Material.POTION);
+			pm = (PotionMeta) random.getItemMeta();
+			pm.setBasePotionData(new PotionData(PotionType.values()[(int) (Math.random() * PotionType.values().length)]));
+			itemsToLookFor.add(addLore(random, name));
+		}
+		if (type.name.equals("Construction")) {
+			ItemStack axe = new ItemStack(Material.IRON_AXE);
+			axe.addEnchantment(Enchantment.DIG_SPEED, 1);
+			itemsToLookFor.add(addLore(axe, name));
+
+			ItemStack shovel = new ItemStack(Material.IRON_SHOVEL);
+			shovel.addEnchantment(Enchantment.DIG_SPEED, 1);
+			itemsToLookFor.add(addLore(shovel, name));
+
+			ItemStack pickaxe = new ItemStack(Material.IRON_PICKAXE);
+			pickaxe.addEnchantment(Enchantment.DIG_SPEED, 1);
+			itemsToLookFor.add(addLore(pickaxe, name));
+			
+			itemsToLookFor.add(addLore(new ItemStack(buildingBlocks[(int) (Math.random() * buildingBlocks.length)], 64), name));
+		}
+		if (type.name.equals("Love")) {
+			itemsToLookFor.add(addLore(new ItemStack(Material.IRON_HELMET), name));
+			itemsToLookFor.add(addLore(new ItemStack(Material.IRON_CHESTPLATE), name));
+			itemsToLookFor.add(addLore(new ItemStack(Material.IRON_LEGGINGS), name));
+			itemsToLookFor.add(addLore(new ItemStack(Material.IRON_BOOTS), name));
+			itemsToLookFor.add(addLore(new ItemStack(Material.CAKE), name));
+		}
+	}
+
+	private ItemStack addLore(ItemStack itemStack, String name) {
+		List<String> lore = itemStack.getItemMeta().getLore();
+		lore.add(name);
+		itemStack.getItemMeta().setLore(lore);
+		return itemStack;
+	}
+
 	private OfflinePlayer getOfflinePlayer(String string) {
 		
 		return null;
