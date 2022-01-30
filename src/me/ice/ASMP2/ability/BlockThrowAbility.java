@@ -50,6 +50,12 @@ public class BlockThrowAbility {
         fallingBlock.setHurtEntities(true);
     }
 
+    /**
+     * Attempts to have a player perform this ability. This method will return if the player is already performing the
+     * ability, if they are currently cooling down from this ability, or if they perform any actions that would
+     * cancel this ability (such as canceling their block).
+     * @param player
+     */
     public static void performAbility(Player player) {
         // If the player is already performing the ability, return.
         if (playersPerformingAbility.contains(player.getUniqueId()))
@@ -125,6 +131,10 @@ public class BlockThrowAbility {
         trackUntilCollision(new BlockProjectile(shooter, fallingBlock, speed * 5));
     }
 
+    /**
+     * Tracks a projectile in the air until it collides with something like a block or entity.
+     * @param projectile The projectile to track.
+     */
     private static void trackUntilCollision(BlockProjectile projectile) {
         var fallingBlock = projectile.block();
         new BukkitRunnable() {
@@ -135,8 +145,8 @@ public class BlockThrowAbility {
                     cancel();
                     return;
                 }
-                var nearbyEntities = getNearbyLivingEntities(fallingBlock, 0.5f, 1.0f, 0.5f);
-                if (!checkIfProjectileCollidedWithEntities(nearbyEntities, projectile.shooter()))
+                var nearbyEntities = getNearbyLivingEntities(fallingBlock);
+                if (!isNearbyEntitiesListValid(nearbyEntities, projectile.shooter()))
                     return;
                 applyDamageAndKnockback(nearbyEntities, fallingBlock.getVelocity(), projectile.damage(), fallingBlock);
                 projectile.shooter().playSound(projectile.shooter(), entityHitSound, 1.0f, 1.0f);
@@ -146,17 +156,36 @@ public class BlockThrowAbility {
         }.runTaskTimer(Main.getInstance(), 1, 1);
     }
 
-    private static List<LivingEntity> getNearbyLivingEntities(Entity from, float x, float y, float z) {
-        return from.getNearbyEntities(x, y, z).stream()
+    /**
+     * Gets other living entities near the specified entities in a horizontal radius of 0.5 meters and a vertical
+     * radius of 1 meter.
+     * @param from The entity whose radius is being scanned.
+     * @return A list of living entities within the radius.
+     */
+    private static List<LivingEntity> getNearbyLivingEntities(Entity from) {
+        return from.getNearbyEntities(0.5f, 1.0f, 0.5f).stream()
                 .filter(entity -> entity instanceof LivingEntity)
                 .map(entity -> (LivingEntity) entity)
                 .toList();
     }
 
-    private static boolean checkIfProjectileCollidedWithEntities(List<LivingEntity> entities, LivingEntity exception) {
+    /**
+     * Checks if the list of entities is valid (not empty, and doesn't just contain the {@code exception}).
+     * @param entities The list validated.
+     * @param exception The entity that should not be alone in the list.
+     * @return True if the list is valid, false otherwise.
+     */
+    private static boolean isNearbyEntitiesListValid(List<LivingEntity> entities, LivingEntity exception) {
         return !(entities.isEmpty() || (entities.size() == 1 && entities.get(0).equals(exception)));
     }
 
+    /**
+     * Applies damage and knockback to a list of living entities.
+     * @param entities The entities to apply damage and knockback to.
+     * @param knockback The knockback force.
+     * @param damage The amount of damage to apply.
+     * @param source The damage source.
+     */
     private static void applyDamageAndKnockback(List<LivingEntity> entities, Vector knockback, float damage, Entity source) {
         entities.forEach(entity -> {
             entity.damage(damage, source);
@@ -165,6 +194,10 @@ public class BlockThrowAbility {
     }
 }
 
+/**
+ * Represents a projectile that is a block (falling block), containing the person who launched the projectile, and
+ * the amount of damage this projectile should do upon hitting an entity.
+ */
 record BlockProjectile(Player shooter, FallingBlock block, float damage) {
 
 }
