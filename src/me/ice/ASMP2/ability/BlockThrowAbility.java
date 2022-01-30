@@ -1,11 +1,12 @@
 package me.ice.ASMP2.ability;
 
 import me.ice.ASMP2.Main;
-import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
@@ -18,11 +19,11 @@ import java.util.*;
 public class BlockThrowAbility {
 
     private static final int maxChargeDuration = 3 * 20; // 3 * 20 = 60 ticks (3 seconds)
-    private static final int blockPickupDistance = 4;
+    private static final int blockPickupDistance = 2;
     private static final Sound blockPickupSound = Sound.BLOCK_STONE_BREAK;
     private static final Sound maxChargeSound = Sound.UI_BUTTON_CLICK;
     private static final Sound chargingSound = Sound.BLOCK_AMETHYST_BLOCK_STEP;
-    private static final String shooterMetadataId = "shooter";
+    private static final Sound entityHitSound = Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
     private static final Set<UUID> playersPerformingAbility = new HashSet<>();
 
     public static void test(Player player, Vector velocity) {
@@ -106,42 +107,45 @@ public class BlockThrowAbility {
         var eyeVector = shooter.getEyeLocation().getDirection().multiply(speed);
         var fallingBlock = shooter.getWorld().spawnFallingBlock(shooter.getEyeLocation(), block.getBlockData());
         fallingBlock.setVelocity(eyeVector);
-        fallingBlock.setMetadata(shooterMetadataId, new FixedMetadataValue(Main.getInstance(), shooter.getUniqueId()));
-        trackUntilCollision(fallingBlock);
+        trackUntilCollision(new BlockProjectile(shooter, fallingBlock, speed * 5));
     }
 
-    /**
-     * Used for handling when a falling block lands a turns into a block.
-     * @param event
-     */
-    @EventHandler
-    public void onEntityChangeBlock(EntityChangeBlockEvent event) {
-        //TODO Implementation
-        // Add particles when the block lands.
-    }
-
-    private static void trackUntilCollision(FallingBlock block) {
-        var shooter = UUID.fromString(block.getMetadata(shooterMetadataId).get(0).asString());
+    private static void trackUntilCollision(BlockProjectile projectile) {
+        var fallingBlock = projectile.block();
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (!block.isValid() || shooter == null) { // Falling block has hit the ground, or despawned for other reasons.
+                // Check if the falling block is valid (hasn't despawned or disappeared), and cancel tracking if true.
+                if (!fallingBlock.isValid()) {
                     cancel();
                     return;
                 }
-                var nearbyEntities = block.getNearbyEntities(0.5, 1.0, 0.5);
-                // If the block hasn't collided with any other entities excluding the person
-                // who shot this block, return.
-                if (nearbyEntities.isEmpty() || nearbyEntities.stream()
-                        .anyMatch(entity -> (entity instanceof Player player) && player.getUniqueId().equals(shooter)))
+                var nearbyEntities = fallingBlock.getNearbyEntities(0.5, 1.0, 0.5).stream()
+                        .filter(entity -> entity instanceof LivingEntity)
+                        .map(entity -> (LivingEntity) entity)
+                        .toList();
+
+                // Check if the block has collided with any other living entities, except for
+                // the shooter.
+                if (nearbyEntities.isEmpty() || (nearbyEntities.size() == 1 && nearbyEntities.get(0).equals(projectile.shooter())))
                     return;
-                doDamageToHitEntity(nearbyEntities.get(0));
+
+                // Iterate through the entities within range, doing damage to each of them
+                // and the shooter (if they aren't the only ones present in the list).
+                nearbyEntities.forEach(entity -> {
+                    // Apply damage and knockback to the entity hit.
+                    entity.damage(projectile.damage(), fallingBlock);
+                    entity.setVelocity(entity.getVelocity().add(fallingBlock.getVelocity()));
+                    projectile.shooter().playSound(projectile.shooter(), entityHitSound, 1.0f, 1.0f);
+                    fallingBlock.remove();
+                });
+
+                cancel();
             }
         }.runTaskTimer(Main.getInstance(), 1, 1);
-    }
+    } 
+}
 
-    private static void doDamageToHitEntity(Entity entity) {
-        //TODO Implementation
-        System.out.println("Doing damage to entity " + entity.getName() + ".");
-    }
+record BlockProjectile(Player shooter, FallingBlock block, float damage) {
+
 }
