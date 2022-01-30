@@ -1,12 +1,17 @@
 package me.ice.ASMP2;
 
+import java.util.List;
+
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDropItemEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class MCEventThing implements Listener {
 	@EventHandler
@@ -42,5 +47,25 @@ public class MCEventThing implements Listener {
 				}
 			}
 		}
+	}
+
+	public boolean isItemFromKit(ItemStack is) {
+		for (Civilization civ : Main.serverInfo.civilizations) {
+			List<String> lore = is.getItemMeta().getLore();
+			if (lore.contains(civ.name)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	@EventHandler
+	public void onItemDrop(EntityDropItemEvent edie) {
+		edie.setCancelled(isItemFromKit(edie.getItemDrop().getItemStack()));
+	}
+
+	@EventHandler
+	public void onChestExchange(InventoryMoveItemEvent imie) {
+		imie.setCancelled(isItemFromKit(imie.getItem()));
 	}
 }
