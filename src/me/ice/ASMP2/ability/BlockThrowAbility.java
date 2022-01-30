@@ -1,6 +1,7 @@
 package me.ice.ASMP2.ability;
 
 import me.ice.ASMP2.Main;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -15,9 +16,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BlockThrowAbility {
 
+    private static final int cooldownDuration = 5;
     private static final int maxChargeDuration = 3 * 20; // 3 * 20 = 60 ticks (3 seconds)
     private static final int blockPickupDistance = 2;
     private static final Sound blockPickupSound = Sound.BLOCK_STONE_BREAK;
@@ -25,6 +28,17 @@ public class BlockThrowAbility {
     private static final Sound chargingSound = Sound.BLOCK_AMETHYST_BLOCK_STEP;
     private static final Sound entityHitSound = Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
     private static final Set<UUID> playersPerformingAbility = new HashSet<>();
+    private static final Map<UUID, Integer> playersCoolingDown = new ConcurrentHashMap<>();
+
+    static {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                playersCoolingDown.entrySet().removeIf(entry -> entry.getValue() <= 0);
+                playersCoolingDown.forEach((key, value) -> playersCoolingDown.put(key, value - 1));
+            }
+        }.runTaskTimer(Main.getInstance(), 20, 20);
+    }
 
     public static void test(Player player, Vector velocity) {
         var world = player.getWorld();
@@ -44,6 +58,10 @@ public class BlockThrowAbility {
         // If the player is already performing the ability, return.
         if (playersPerformingAbility.contains(player.getUniqueId()))
             return;
+        if (playersCoolingDown.containsKey(player.getUniqueId())) {
+            player.sendMessage(ChatColor.RED + String.format("You must wait %d more seconds.", playersCoolingDown.get(player.getUniqueId())));
+            return;
+        }
 
         // Get the block the player is looking at.
         var result = player.rayTraceBlocks(blockPickupDistance);
@@ -88,6 +106,7 @@ public class BlockThrowAbility {
                     // Remove the player from the list of players that are currently performing this ability.
                     // If the player isn't removed then they will repeatedly shoot blocks.
                     playersPerformingAbility.remove(player.getUniqueId());
+                    playersCoolingDown.put(player.getUniqueId(), cooldownDuration);
 
                     // Cancel this runnable task.
                     cancel();
