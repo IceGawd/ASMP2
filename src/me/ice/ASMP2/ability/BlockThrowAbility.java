@@ -36,20 +36,6 @@ public class BlockThrowAbility {
         }.runTaskTimer(Main.getInstance(), 20, 20);
     }
 
-    public static void test(Player player, Vector velocity) {
-        var world = player.getWorld();
-        var blockInHand = player.getInventory().getItemInMainHand();
-
-        //TODO Remove this code once misidentification issue is fixed.
-        if (!blockInHand.getType().isBlock() || blockInHand.getType().isAir()) {
-            player.sendMessage("The item in hand is not a block. (" + blockInHand.getType() + ")");
-            return;
-        }
-        var fallingBlock = world.spawnFallingBlock(player.getLocation(), Objects.requireNonNull(blockInHand.getData()));
-        fallingBlock.setVelocity(velocity);
-        fallingBlock.setHurtEntities(true);
-    }
-
     /**
      * Attempts to have a player perform this ability. This method will return if the player is already performing the
      * ability, if they are currently cooling down from this ability, or if they perform any actions that would

@@ -96,17 +96,6 @@ public class Main extends JavaPlugin {
 			}
 
 		}, 0, 20 * 60);
-
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				for (var player : Bukkit.getOnlinePlayers()) {
-					if (player.isBlocking()) {
-						BlockThrowAbility.performAbility(player);
-					}
-				}
-			}
-		}.runTaskTimer(this, 5, 5);
 	}
 
 	public static void setName(Player p, Civilization civ) {
@@ -570,14 +559,6 @@ public class Main extends JavaPlugin {
 		if (label.equalsIgnoreCase("media")) {
 			p.sendMessage("OFFICIAL ASMP STREAM CHANNEL: https://www.twitch.tv/bubb1ebees");
 			p.sendMessage("SUPPORT THE OWNER: https://www.youtube.com/channel/UCfLi7Y8WOtu3zclT10NNXfw");
-		}
-
-		if (label.equalsIgnoreCase("testabilityblockthrow")) {
-			var x = Float.parseFloat(args[0]);
-			var y = Float.parseFloat(args[1]);
-			var z = Float.parseFloat(args[2]);
-			BlockThrowAbility.test(p, new org.bukkit.util.Vector(x, y, z));
-			return true;
 		}
 
 		return false;
