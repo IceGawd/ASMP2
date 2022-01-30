@@ -2,16 +2,12 @@ package me.ice.ASMP2.ability;
 
 import me.ice.ASMP2.Main;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -139,30 +135,34 @@ public class BlockThrowAbility {
                     cancel();
                     return;
                 }
-                var nearbyEntities = fallingBlock.getNearbyEntities(0.5, 1.0, 0.5).stream()
-                        .filter(entity -> entity instanceof LivingEntity)
-                        .map(entity -> (LivingEntity) entity)
-                        .toList();
-
-                // Check if the block has collided with any other living entities, except for
-                // the shooter.
-                if (nearbyEntities.isEmpty() || (nearbyEntities.size() == 1 && nearbyEntities.get(0).equals(projectile.shooter())))
+                var nearbyEntities = getNearbyLivingEntities(fallingBlock, 0.5f, 1.0f, 0.5f);
+                if (!checkIfProjectileCollidedWithEntities(nearbyEntities, projectile.shooter()))
                     return;
-
-                // Iterate through the entities within range, doing damage to each of them
-                // and the shooter (if they aren't the only ones present in the list).
-                nearbyEntities.forEach(entity -> {
-                    // Apply damage and knockback to the entity hit.
-                    entity.damage(projectile.damage(), fallingBlock);
-                    entity.setVelocity(entity.getVelocity().add(fallingBlock.getVelocity()));
-                    projectile.shooter().playSound(projectile.shooter(), entityHitSound, 1.0f, 1.0f);
-                    fallingBlock.remove();
-                });
-
+                applyDamageAndKnockback(nearbyEntities, fallingBlock.getVelocity(), projectile.damage(), fallingBlock);
+                projectile.shooter().playSound(projectile.shooter(), entityHitSound, 1.0f, 1.0f);
+                fallingBlock.remove();
                 cancel();
             }
         }.runTaskTimer(Main.getInstance(), 1, 1);
-    } 
+    }
+
+    private static List<LivingEntity> getNearbyLivingEntities(Entity from, float x, float y, float z) {
+        return from.getNearbyEntities(x, y, z).stream()
+                .filter(entity -> entity instanceof LivingEntity)
+                .map(entity -> (LivingEntity) entity)
+                .toList();
+    }
+
+    private static boolean checkIfProjectileCollidedWithEntities(List<LivingEntity> entities, LivingEntity exception) {
+        return !(entities.isEmpty() || (entities.size() == 1 && entities.get(0).equals(exception)));
+    }
+
+    private static void applyDamageAndKnockback(List<LivingEntity> entities, Vector knockback, float damage, Entity source) {
+        entities.forEach(entity -> {
+            entity.damage(damage, source);
+            entity.setVelocity(entity.getVelocity().add(knockback));
+        });
+    }
 }
 
 record BlockProjectile(Player shooter, FallingBlock block, float damage) {
