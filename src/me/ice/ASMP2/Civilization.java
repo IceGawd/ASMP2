@@ -12,6 +12,7 @@ public class Civilization implements Serializable{
 	UUID leader;
 	ChatColor cc = ChatColor.WHITE;
 	int level = 1;
+	boolean friendlyFire = false;
 	
 	Civilization(CivilizationType t, String n, UUID l) {
 		type = t;
