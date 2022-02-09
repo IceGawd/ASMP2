@@ -1,9 +1,0 @@
-main: me.ice.ASMP2.Main
-name: ASMP2
-version: 1.0
-author: CelluronTech
-
-commands:
-  civ:
-  help:
-  media:

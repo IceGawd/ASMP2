@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -26,6 +25,7 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.scheduler.BukkitScheduler;
 
 public class Main extends JavaPlugin {
+	private static Main instance;
 	static InfoToSave serverInfo;
 	static ArrayList<Event> events = new ArrayList<Event>();
 	// ICE stands for Internal Civilization Extention
@@ -67,7 +67,8 @@ public class Main extends JavaPlugin {
 	};
 	
 	@Override
-	public void onEnable() {	
+	public void onEnable() {
+		instance = this;
 		getServer().getPluginManager().registerEvents(new MCEventThing(), this);
 
 		try {
@@ -119,7 +120,6 @@ public class Main extends JavaPlugin {
 			}
 
 		}, 0, 20 * 60);
-		
 	}
 
 	public static void setName(Player p, Civilization civ) {
@@ -746,6 +746,7 @@ public class Main extends JavaPlugin {
 			p.sendMessage("OFFICIAL ASMP STREAM CHANNEL: https://www.twitch.tv/bubb1ebees");
 			p.sendMessage("SUPPORT THE OWNER: https://www.youtube.com/channel/UCfLi7Y8WOtu3zclT10NNXfw");
 		}
+
 		return false;
 	}
 
@@ -868,5 +869,9 @@ Deny a team invite
 				return;
 			}
 		}		
+	}
+
+	public static Main getInstance() {
+		return instance;
 	}
 }
