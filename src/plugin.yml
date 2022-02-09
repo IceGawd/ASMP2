@@ -7,3 +7,9 @@ commands:
   civ:
   help:
   media:
+
+# Developer commands used for testing abilities
+  testabilityblockthrow:
+    description: Used for testing block throw ability.
+    usage: "Usage: /testabilityblockthrow <x> <y> <z>"
+    aliases: [tabt]

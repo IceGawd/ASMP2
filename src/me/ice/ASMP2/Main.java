@@ -5,18 +5,24 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.UUID;
+import java.util.Vector;
 
+import me.ice.ASMP2.ability.BlockThrowAbility;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
 public class Main extends JavaPlugin {
+	private static Main instance;
 	static InfoToSave serverInfo;
 	static ArrayList<Event> events = new ArrayList<Event>();
 	// ICE stands for Internal Civilization Extention
@@ -46,6 +52,7 @@ public class Main extends JavaPlugin {
 	
 	@Override
 	public void onEnable() {
+		instance = this;
 		getServer().getPluginManager().registerEvents(new MCEventThing(), this);
 
 		try {
@@ -89,7 +96,6 @@ public class Main extends JavaPlugin {
 			}
 
 		}, 0, 20 * 60);
-		
 	}
 
 	public static void setName(Player p, Civilization civ) {
@@ -575,6 +581,7 @@ public class Main extends JavaPlugin {
 			p.sendMessage("OFFICIAL ASMP STREAM CHANNEL: https://www.twitch.tv/bubb1ebees");
 			p.sendMessage("SUPPORT THE OWNER: https://www.youtube.com/channel/UCfLi7Y8WOtu3zclT10NNXfw");
 		}
+
 		return false;
 	}
 
@@ -697,5 +704,9 @@ Deny a team invite
 				return;
 			}
 		}		
+	}
+
+	public static Main getInstance() {
+		return instance;
 	}
 }
