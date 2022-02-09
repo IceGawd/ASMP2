@@ -77,7 +77,7 @@ public class BlockThrowAbility {
                 if (player.isBlocking()) {
                     if (chargeDuration < maxChargeDuration) {
                         if (chargeDuration > 0 && chargeDuration % 20 == 0) // Only play sound every second.
-                            player.playSound(player, chargingSound, 0.5f, 0.5f);
+                            player.playSound(player.getLocation(), chargingSound, 0.5f, 0.5f);
                         chargeDuration++;
                     } else {
                         // Check if the players shot is fully charged. If it is, then
@@ -85,7 +85,7 @@ public class BlockThrowAbility {
                         // the players shot remains fully charged.
                         if (!fullyCharged) {
                             fullyCharged = true;
-                            player.playSound(player, maxChargeSound, 1.0f, 1.0f);
+                            player.playSound(player.getLocation(), maxChargeSound, 1.0f, 1.0f);
                         }
                     }
                 } else {
@@ -135,7 +135,7 @@ public class BlockThrowAbility {
                 if (!isNearbyEntitiesListValid(nearbyEntities, projectile.shooter()))
                     return;
                 applyDamageAndKnockback(nearbyEntities, fallingBlock.getVelocity(), projectile.damage(), fallingBlock);
-                projectile.shooter().playSound(projectile.shooter(), entityHitSound, 1.0f, 1.0f);
+                projectile.shooter().playSound(projectile.shooter().getLocation(), entityHitSound, 1.0f, 1.0f);
                 fallingBlock.remove();
                 cancel();
             }
