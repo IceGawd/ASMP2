@@ -132,7 +132,19 @@ public class Main extends JavaPlugin {
 		}
 		return -1;
 	}
+
+	int getPlayerIndex(OfflinePlayer p) {
+		UUID searchFor = p.getUniqueId();
 		
+		for (int x = 0; x < serverInfo.playersWhoHaveJoined.size(); x++) {
+			if (serverInfo.playersWhoHaveJoined.get(x).equals(searchFor)) {
+				return x;
+			}
+		}
+		return -1;
+	}
+
+	
 	Civilization civilizationFromName(String name) {
 		for (Civilization c : serverInfo.civilizations) {
 			if (c.name.toLowerCase().equals(name.toLowerCase())) {
@@ -280,9 +292,10 @@ public class Main extends JavaPlugin {
 					int civIndex = serverInfo.indexOfCivilization.get(yourIndex);
 					Civilization c = serverInfo.civilizations.get(civIndex);
 					if (c.leader.equals(p.getUniqueId())) {
-						Player gonnaGetKicked = Bukkit.getPlayer(args[0]);
+						OfflinePlayer gonnaGetKicked = getOfflinePlayer(args[0]);
+						Player onlinePlayer = Bukkit.getPlayer(args[0]);
 						if (gonnaGetKicked == null) {
-							p.sendMessage(ChatColor.RED + args[0] + " is either misspelled or player is not online");
+							p.sendMessage(ChatColor.RED + args[0] + " is misspelled");
 						}
 						else {
 							int index = getPlayerIndex(gonnaGetKicked);
@@ -290,13 +303,16 @@ public class Main extends JavaPlugin {
 								p.sendMessage(ChatColor.RED + gonnaGetKicked.getName() + " is not in your civilization!");						
 							}
 							else {
-								setName(gonnaGetKicked, null);
+								if (onlinePlayer != null) {
+									setName(onlinePlayer, null);
+								}
+								
 								serverInfo.playersWhoHaveJoined.remove(index);
 								serverInfo.indexOfCivilization.remove(index);
 								for (int x = 0; x < serverInfo.indexOfCivilization.size(); x++) {
 									Player player = Bukkit.getPlayer(serverInfo.playersWhoHaveJoined.get(x));
 									if ((serverInfo.indexOfCivilization.get(x) == civIndex) && (player != null)) {
-										p.sendMessage(ChatColor.RED + gonnaGetKicked.getName() + " got kicked!");
+										player.sendMessage(ChatColor.RED + gonnaGetKicked.getName() + " got kicked!");
 									}
 								}
 							}
@@ -537,6 +553,11 @@ public class Main extends JavaPlugin {
 		}
 	}
 	
+	private OfflinePlayer getOfflinePlayer(String string) {
+		
+		return null;
+	}
+
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		Player p = (Player) sender;
 		if (label.equalsIgnoreCase("civ")) {
